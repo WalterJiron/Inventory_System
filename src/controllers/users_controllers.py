@@ -72,7 +72,7 @@ def create_user(user: UserCreate) -> dict:
                 # Ejecutar la consulta con los valores del nuevo usuario
                 cursor.execute(query, (user.NameUser, user.Clave, user.RolID))
                 
-                # Obtener el ID del usuario recién creado
+                # Obtener el ID del usuario recien creado
                 id_user = cursor.fetchone()[0]
                 
                 connection.commit()
@@ -86,7 +86,7 @@ def update_user(id_user: int, user: UserUpdate) -> dict:
     try:
         with get_connection() as connection:
             with connection.cursor() as cursor:
-                # Verificar si el usuario existe y está activo
+                # Verificar si el usuario existe y esta activo
                 check_query = """
                     SELECT EstadoUser 
                     FROM Usuarios 
@@ -98,7 +98,7 @@ def update_user(id_user: int, user: UserUpdate) -> dict:
                 if not result:
                     raise Exception("Usuario no encontrado o inactivo")
                 
-                # Construir la consulta UPDATE dinámicamente
+                # Construir la consulta UPDATE dinamicamente
                 update_parts = []
                 params = []
                 
@@ -117,7 +117,7 @@ def update_user(id_user: int, user: UserUpdate) -> dict:
                 if not update_parts:
                     raise Exception("No se proporcionaron campos para actualizar")
                 
-                # Agregar el ID del usuario a los parámetros
+                # Agregar el ID del usuario a los parametros
                 params.append(id_user)
                 
                 # Construir y ejecutar la consulta UPDATE
