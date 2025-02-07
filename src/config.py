@@ -8,14 +8,26 @@ load_dotenv()
 
 class ConfigDB:
     def __init__(self):
-        # Obtiene las variables de entorno necesarias para la conexion
-        self.server = os.getenv('DB_SERVER')
-        self.database = os.getenv('DB_NAME')
-        self.username = os.getenv('DB_USER')
-        self.password = os.getenv('DB_PASSWORD')
+        # Obtiene las variables de entorno necesarias para la conexión
+        self.server = self._get_env_variable('DB_SERVER')
+        self.database = self._get_env_variable('DB_DATABASE')
+        self.username = self._get_env_variable('DB_USER')
+        self.password = self._get_env_variable('DB_PASSWORD')
 
-    # Valores por defecto para la configuracion de la base de datos
-    DB_SERVER = os.getenv('DB_SERVER', 'localhost')
-    DB_DATABASE = os.getenv('DB_DATABASE', 'GestionInventario')
-    DB_USER = os.getenv('DB_USER', 'sa')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'your_password')
+    def _get_env_variable(self, var_name):
+        #Obtiene una variable de entorno y lanza una excepcion si no esta definida
+        value = os.getenv(var_name)
+        if value is None:
+            raise ValueError(f"{var_name} no esta definida en el archivo .env")
+        return value
+
+    @property
+    def connection_string(self):
+        #Construye y retorna la cadena de conexion a la base de datos
+        return (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={self.server};"
+            f"DATABASE={self.database};"
+            f"UID={self.username};"
+            f"PWD={self.password}"
+        )

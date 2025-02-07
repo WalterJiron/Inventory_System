@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse, Response  # Importacion de tipos de 
 from fastapi.requests import Request   # Importacion del tipo Request para manejar peticiones
 from fastapi.staticfiles import StaticFiles   # Importacion para servir archivos estaticos
 from fastapi.templating import Jinja2Templates   # Importacion del motor de plantillas Jinja2
+from src.routers.users_routers import user_router
 
 app = FastAPI()
 
@@ -27,6 +28,5 @@ async def  http_error_handle(request: Request, call_nex) -> Response | JSONRespo
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return JSONResponse(content= content, status_code= status_code)
     
-@app.get('/', tags=['Home'])
-def home():
-   pass
+#----------------------------------- Ruras de Users ----------------------------------- #
+app.include_router(router=user_router)
