@@ -12,7 +12,7 @@ class Users(BaseModel):
         arbitrary_types_allowed = True
 
 class UserCreate(BaseModel):
-    #Modelo para crear un nuevo usuario
+    # Modelo para crear un nuevo usuario
     NameUser: str = Field(
         min_length=3, 
         max_length=25,

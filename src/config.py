@@ -8,7 +8,7 @@ load_dotenv()
 
 class ConfigDB:
     def __init__(self):
-        # Obtiene las variables de entorno necesarias para la conexión
+        # Obtiene las variables de entorno necesarias para la conexion
         self.server = self._get_env_variable('DB_SERVER')
         self.database = self._get_env_variable('DB_DATABASE')
         self.username = self._get_env_variable('DB_USER')
