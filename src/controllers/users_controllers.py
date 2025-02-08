@@ -1,5 +1,5 @@
 from src.models.Users_models import Users, UserCreate, UserUpdate
-from src.DB import get_connection  # Asegúrate de que get_connection sea asíncrono
+from src.DB import get_connection  
 from typing import List, Optional
 
 def __convert_to_user(user_data: tuple) -> Users:
