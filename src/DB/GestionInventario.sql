@@ -82,9 +82,9 @@ CREATE TABLE Proveedores(
     Telefono NVARCHAR(15) CHECK(Telefono LIKE '+[0-9]%'), -- Permite números internacionales
     Email NVARCHAR(100) NOT NULL,
     Direccion NVARCHAR(MAX),
-    EstadoProv BIT NOT NULL DEFAULT 1
-);
-GO
+    EstadoProv BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME DEFAULT GETDATE()
+); GO
 
 ------------------PRODUCTO----------------------------------
 CREATE TABLE Producto(
