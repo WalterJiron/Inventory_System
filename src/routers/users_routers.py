@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, status
 from src.models.Users_models import UserCreate, UserUpdate, Users  # modelos de usuario
 from src.controllers.users_controllers import (
-    create_user, get_users, update_user, get_user_by_id
+    create_user, delete_users, get_users, update_user, get_user_by_id
 )
 
 # Crear un enrutador para manejar las rutas de usuarios
@@ -15,7 +15,7 @@ async def get_all_users():
     Obtiene todos los usuarios activos
     """
     try:
-        users = get_users()  # Llamar a la funcin para obtener usuarios
+        users = await get_users()  # Llamar a la funcin para obtener usuarios
         return users
     except Exception as e:
         raise HTTPException(
@@ -32,7 +32,7 @@ async def get_user(id_user: int):
     - **id_user**: El ID del usuario a buscar.
     """
     try:
-        user = get_user_by_id(id_user)  # Llamar a la funcion para obtener un usuario por ID
+        user = await get_user_by_id(id_user)  # Llamar a la funcion para obtener un usuario por ID
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -54,7 +54,7 @@ async def create_new_user(user: UserCreate):
     - **user**: Datos del usuario a crear.
     """
     try:
-        result = create_user(user)  # Llamar a la funcion para crear un usuario
+        result = await create_user(user)  # Llamar a la funcion para crear un usuario
         return result
     except Exception as e:
         raise HTTPException(
@@ -72,10 +72,22 @@ async def update_existing_user(id_user: int, user: UserUpdate):
     - **user**: Datos del usuario a actualizar.
     """
     try:
-        result = update_user(id_user, user)  # Llamar a la funcion para actualizar un usuario
+        result = await update_user(id_user, user)  # Llamar a la funcion para actualizar un usuario
         return result
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error al actualizar usuario: {str(e)}"
+        )
+    
+@user_router.delete("/users/{id_user}", tags=['users'])
+async def delete_user(id_user):
+    """Elimina un usuario existente mediante su ID."""
+    try:
+        result = await delete_users(id_user)
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code= status.HTTP_400_BAD_REQUEST,
+            detail= f'Error al eliminar usuario: {str(e)}'
         )

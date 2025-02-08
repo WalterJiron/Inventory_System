@@ -1,9 +1,8 @@
 from src.models.Users_models import Users, UserCreate, UserUpdate
-from src.DB import get_connection
+from src.DB import get_connection  # Asegúrate de que get_connection sea asíncrono
 from typing import List, Optional
-import pyodbc
 
-def _convert_to_user(user_data: tuple) -> Users:
+def __convert_to_user(user_data: tuple) -> Users:
     """Convierte una tupla de datos de la base de datos en un objeto Users."""
     return Users(
         id_user=user_data[0],
@@ -12,11 +11,11 @@ def _convert_to_user(user_data: tuple) -> Users:
         creation_date=user_data[3],
     )
 
-def get_users() -> List[Users]:
+async def get_users() -> List[Users]:
     """Obtiene todos los usuarios activos de la base de datos."""
     try:
-        with get_connection() as connection:
-            with connection.cursor() as cursor:
+        async with await get_connection() as connection:
+            async with connection.cursor() as cursor:
                 # Consulta SQL para obtener todos los usuarios activos
                 query = """
                     SELECT US.IdUser, US.NameUser, ROL.NameRol, US.CreationDateUser 
@@ -24,20 +23,20 @@ def get_users() -> List[Users]:
                     JOIN Roles AS ROL ON US.RolID = ROL.RolID
                     WHERE US.EstadoUser = 1
                 """
-                cursor.execute(query)
-                users = cursor.fetchall()
+                await cursor.execute(query)
+                users = await cursor.fetchall()
                 
                 # Convertir los resultados en objetos Users
-                return [_convert_to_user(user) for user in users]
+                return [await __convert_to_user(user) for user in users]
                 
-    except pyodbc.Error as e:
+    except Exception as e:
         raise Exception(f"Error al obtener usuarios: {str(e)}")
     
-def get_user_by_id(id_user: int) -> Optional[Users]:
+async def get_user_by_id(id_user: int) -> Optional[Users]:
     """Obtiene un usuario por su ID si está activo."""
     try:
-        with get_connection() as connection:
-            with connection.cursor() as cursor:
+        async with await get_connection() as connection:
+            async with connection.cursor() as cursor:
                 # Consulta SQL para obtener un usuario por su IdUser
                 query = """
                     SELECT US.IdUser, US.NameUser, ROL.NameRol, US.CreationDateUser 
@@ -45,23 +44,23 @@ def get_user_by_id(id_user: int) -> Optional[Users]:
                     JOIN Roles AS ROL ON US.RolID = ROL.RolID
                     WHERE US.EstadoUser = 1 AND IdUser = ?
                 """
-                cursor.execute(query, (id_user,))
-                user = cursor.fetchone()
+                await cursor.execute(query, (id_user,))
+                user = await cursor.fetchone()
                 
                 if user is None:
                     return None
                 
                 # Convertir el resultado en un objeto Users
-                return _convert_to_user(user)
+                return await __convert_to_user(user)
                 
-    except pyodbc.Error as e:
+    except Exception as e:
         raise Exception(f"Error al obtener usuario por ID: {str(e)}")
     
-def create_user(user: UserCreate) -> dict:
+async def create_user(user: UserCreate) -> dict:
     """Crea un nuevo usuario en la base de datos."""
     try:
-        with get_connection() as connection:
-            with connection.cursor() as cursor:
+        async with await get_connection() as connection:
+            async with connection.cursor() as cursor:
                 # Consulta SQL para insertar un nuevo usuario
                 query = """
                     INSERT INTO Usuarios (NameUser, Clave, RolID)
@@ -70,30 +69,30 @@ def create_user(user: UserCreate) -> dict:
                 """
                 
                 # Ejecutar la consulta con los valores del nuevo usuario
-                cursor.execute(query, (user.NameUser, user.Clave, user.RolID))
+                await cursor.execute(query, (user.NameUser, user.Clave, user.RolID))
                 
                 # Obtener el ID del usuario recien creado
-                id_user = cursor.fetchone()[0]
+                id_user = (await cursor.fetchone())[0]
                 
-                connection.commit()
+                await connection.commit()
                 return {"message": "Usuario creado exitosamente", "id_user": id_user}
                 
-    except pyodbc.Error as e:
+    except Exception as e:
         raise Exception(f"Error al crear usuario: {str(e)}")
     
-def update_user(id_user: int, user: UserUpdate) -> dict:
+async def update_user(id_user: int, user: UserUpdate) -> dict:
     """Actualiza un usuario existente en la base de datos."""
     try:
-        with get_connection() as connection:
-            with connection.cursor() as cursor:
+        async with await get_connection() as connection:
+            async with connection.cursor() as cursor:
                 # Verificar si el usuario existe y esta activo
                 check_query = """
                     SELECT EstadoUser 
                     FROM Usuarios 
                     WHERE IdUser = ? AND EstadoUser = 1
                 """
-                cursor.execute(check_query, (id_user,))
-                result = cursor.fetchone()
+                await cursor.execute(check_query, (id_user,))
+                result = await cursor.fetchone()
                 
                 if not result:
                     raise Exception("Usuario no encontrado o inactivo")
@@ -127,9 +126,39 @@ def update_user(id_user: int, user: UserUpdate) -> dict:
                     WHERE IdUser = ?
                 """
                 
-                cursor.execute(query, params)
-                connection.commit()
+                await cursor.execute(query, params)
+                await connection.commit()
                 return {"message": "Usuario actualizado exitosamente"}
                 
-    except pyodbc.Error as e:
+    except Exception as e:
         raise Exception(f"Error al actualizar usuario: {str(e)}")
+    
+async def delete_users(id_user: int) -> dict:
+    """Elimina un usuario dentro de la base de datos."""
+    try:
+        async with await get_connection() as connection:
+            async with connection.cursor() as cursor:
+                # Verificar si el usuario existe y esta activo
+                check_query = """
+                    SELECT EstadoUser 
+                    FROM Usuarios 
+                    WHERE IdUser = ? AND EstadoUser = 1
+                """
+                await cursor.execute(check_query, (id_user,))
+                result = await cursor.fetchone()
+                
+                if not result:
+                    raise Exception("Usuario no encontrado o inactivo")
+                
+                # Consulta para desactivar al usuario
+                query = """
+                    UPDATE Usuarios SET
+                        EstadoUser = 0
+                    WHERE IdUser = ?
+                """
+                await cursor.execute(query, (id_user,))  # Eliminamos al usuario
+                await connection.commit()
+                return {"message": "Usuario eliminado exitosamente"}
+                
+    except Exception as e:
+        raise Exception(f'Error al eliminar usuario: {str(e)}')
