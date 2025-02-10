@@ -28,5 +28,10 @@ async def  http_error_handle(request: Request, call_nex) -> Response | JSONRespo
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return JSONResponse(content= content, status_code= status_code)
     
+@app.get('/', tags=['Home'])
+def home() -> JSONResponse:
+    result = {'message':'Holaaa'}
+    return JSONResponse(content= result, status_code= status.HTTP_200_OK)
+    
 #----------------------------------- Ruras de Users ----------------------------------- #
 app.include_router(router=user_router)

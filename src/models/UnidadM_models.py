@@ -1,28 +1,32 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from datetime import datetime
 
 
 class UnidadMedida(BaseModel):
-    id: int
+    id_UM: int
     nombre: str
-    abreviatura: Optional[str] = None
-    estado: bool = Field(default=True)
+    abreviatura: str
 
     class Config:
         arbitrary_types_allowed = True
 
-class create_update_unidadM(BaseModel):
+class create_unidadM(BaseModel):
+    NameUnidadM : str= Field(
+        min_length=2, max_length=25,
+        description="Nombre unidad medidad"
+    )
+    abreviaturaUnidM:str=Field(
+        min_length=3, max_length=10,
+        description="Abreviatura unidad de medida"
+    )
+
+class update_unidadM(BaseModel):
     NameUnidadM : Optional[str]= Field(
-        None,
-        min_length=2,
-        max_length=25,
+        None, min_length=2, max_length=25,
         description="Nombre unidad medidad"
     )
     abreviaturaUnidM:Optional[str]=Field(
-        None,
-        min_length=1,
-        max_length=10,
+        None, min_length=3, max_length=10,
         description="Abreviatura unidad de medida"
     )
 

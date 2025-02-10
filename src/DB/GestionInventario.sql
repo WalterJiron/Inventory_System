@@ -11,6 +11,7 @@ GO
 CREATE TABLE Roles(
     RolID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     NameRol NVARCHAR(30) NOT NULL,
+    DescripRol NVARCHAR(MAX),
     CreationDateRol DATETIME DEFAULT GETDATE(),
     EstadoRol BIT DEFAULT 1
 );
@@ -31,7 +32,7 @@ CREATE TABLE Categoria(
     IdCategoria INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     Nombre NVARCHAR(50) NOT NULL,
     Descripcion NVARCHAR(MAX),
-    Estado BIT NOT NULL DEFAULT 1
+    Estado BIT DEFAULT 1
 );
 GO
 
@@ -58,8 +59,8 @@ GO
 CREATE TABLE Almacenes (
     AlmacenID INT PRIMARY KEY IDENTITY(1,1),
     Nombre NVARCHAR(100) NOT NULL,
-    Direccion NVARCHAR(MAX),
-    Capacidad INT, -- Capacidad total del almacén
+    Direccion NVARCHAR(MAX) NOT NULL,
+    Capacidad INT DEFAULT 1, -- Capacidad total del almacén
     Estado BIT NOT NULL DEFAULT 1
 );
 GO
@@ -70,7 +71,7 @@ CREATE TABLE UbicacionesAlmacen(
     AlmacenID INT FOREIGN KEY REFERENCES Almacenes(AlmacenID) ON DELETE CASCADE,
     CodigoUbicacion NVARCHAR(50) NOT NULL, -- Código único para la ubicación
     Descripcion NVARCHAR(MAX),
-    Capacidad INT, -- Capacidad de la ubicación específica
+    Capacidad INT DEFAULT 0, -- Capacidad de la ubicación específica   La deje por defaul en 0
     Estado BIT NOT NULL DEFAULT 1
 );
 GO
@@ -82,9 +83,10 @@ CREATE TABLE Proveedores(
     Telefono NVARCHAR(15) CHECK(Telefono LIKE '+[0-9]%'), -- Permite números internacionales
     Email NVARCHAR(100) NOT NULL,
     Direccion NVARCHAR(MAX),
-    EstadoProv BIT NOT NULL DEFAULT 1,
-    FechaCreacion DATETIME DEFAULT GETDATE()
-); GO
+    dateCreateProv DATETIME DEFAULT GETDATE(),
+    EstadoProv BIT NOT NULL DEFAULT 1
+); 
+GO
 
 ------------------PRODUCTO----------------------------------
 CREATE TABLE Producto(
@@ -92,12 +94,13 @@ CREATE TABLE Producto(
     Nombre NVARCHAR(30) NOT NULL,
     Descripcion NVARCHAR(MAX),
     Precio DECIMAL(18, 2) NOT NULL CHECK (Precio >= 0),
-    IdCategoria INT FOREIGN KEY REFERENCES Categoria(IdCategoria) ON DELETE CASCADE NOT NULL,
-    ProveedorID INT FOREIGN KEY REFERENCES Proveedores(ProveedorID) ON DELETE CASCADE NOT NULL,
-    UnidadID INT FOREIGN KEY REFERENCES UnidadesMedida(UnidadID) ON DELETE CASCADE NOT NULL,
-    UbicacionID INT FOREIGN KEY REFERENCES UbicacionesAlmacen(UbicacionID) ON DELETE CASCADE NOT NULL,
+    IdSubCategory INT FOREIGN KEY REFERENCES Subcategoria(id_subcategoria) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    ProveedorID INT FOREIGN KEY REFERENCES Proveedores(ProveedorID) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    UnidadID INT FOREIGN KEY REFERENCES UnidadesMedida(UnidadID) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    UbicacionID INT FOREIGN KEY REFERENCES UbicacionesAlmacen(UbicacionID) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     SKU NVARCHAR(50) UNIQUE, -- Código único para identificar el producto
     Stock INT NOT NULL DEFAULT 0 CHECK (Stock >= 0),
+    dateCreateProduc DATETIME DEFAULT GETDATE(),
     EstadoProduc BIT NOT NULL DEFAULT 1
 );
 GO

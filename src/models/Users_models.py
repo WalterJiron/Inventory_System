@@ -6,7 +6,7 @@ class Users(BaseModel):
     id_user: int
     name_user: str
     rol_name: str
-    creation_date: datetime = Field(default_factory = datetime.now)
+    creation_date: datetime 
 
     class Config:
         arbitrary_types_allowed = True

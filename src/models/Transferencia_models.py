@@ -3,27 +3,29 @@ from typing import Optional
 from datetime import datetime
 
 class Transferencia(BaseModel):
-    id: int
+    id_trasFe: int
     id_producto: int
     cantidad: int
     almacen_origen_id: int
     almacen_destino_id: int
-    fecha_transferencia: datetime = Field(default_factory=datetime.now)
+    fecha_transferencia: datetime 
     id_user: int
-    comentario: Optional[str] = None
-    estado_transferencia: str
+    comentario: str 
 
     class Config:
         arbitrary_types_allowed = True
 
 class TransferenciaCreate(BaseModel):
-    id_producto: int= Field(None, description="ID del producto")
-    cantidad: int = Field(None, min_length=1,description="Cantidad de producto a transferir")
-    almacen_origen_id: int = Field(None, description="ID del almacén de origen")
-    almacen_destino_id: int = Field(None, description="ID del almacén de destino")
-    id_user: int = Field(None, description="ID del usuario que realiza la transferencia")
-    comentario: str = Field(None, max_length=250,description="Comentario sobre la transferencia")
-    fecha_transferencia: Optional[datetime] = Field(default_factory=datetime.now)
+    id_producto: int= Field(gt=0, description="ID del producto")
+    cantidad: int = Field(gt=0,description="Cantidad de producto a transferir")
+    almacen_origen_id: int = Field(gt=0, description="ID del almacén de origen")
+    almacen_destino_id: int = Field(gt=0, description="ID del almacén de destino")
+    id_user: int = Field(gt=0, description="ID del usuario que realiza la transferencia")
+    comentario: Optional[str] = Field(
+        None, max_length=250,
+        description="Comentario sobre la transferencia"
+    )
+    fecha_transferencia: Optional[datetime]
 
 
 

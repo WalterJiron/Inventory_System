@@ -4,19 +4,33 @@ from datetime import datetime
 
  
 class Rol(BaseModel):
-    id: int
+    id_Rol: int
     name_rol: str
-    creation_date: datetime = Field(default_factory=datetime.now)
-    estado: bool = Field(default=True)
+    descrip_rl: Optional[str]
+    creation_date: datetime 
 
     class Config: 
         arbitrary_types_allowed = True
 
-class create_update_rol(BaseModel):
+class CreateRol(BaseModel):
+    NameRol: str = Field(
+        min_length=3, max_length=20,
+        regex=r'^[a-zA-Z]+\.?$',
+        description="Nombre del rol"
+    )
+    descrip_rol: Optional[str]= Field(
+        None, min_length=3, max_length=250,
+        description='Descripcion del rol'
+    )
+
+class UpdateRol(BaseModel):
     NameRol: Optional[str] = Field(
-        None,
-        min_length=3,
-        max_length=20,
+        min_length=3, max_length=20,
+        regex=r'^[a-zA-Z]+\.?$',
         descripcion= "Nombre del rol"
     )  
+    descrip_rol: Optional[str]= Field(
+        None, min_length=3, max_length=250,
+         description='Descripcion del rol'
+    )
     

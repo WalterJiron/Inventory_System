@@ -1,0 +1,4 @@
+2) Tambien hay que ver algunos campos de fecha de algunas tablas.
+
+3) agregar mas validaciones y dar mejor formato.
+

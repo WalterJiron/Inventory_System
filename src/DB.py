@@ -49,7 +49,7 @@ class AsyncDBConnection:
         return self.engine
 
 # Funcion asincrona para obtener una conexion a la base de datos
-async def get_async_connection() -> AsyncSession:
+async def get_connection() -> AsyncSession:
     try:
         # Obtiene la instancia de AsyncDBConnection
         db_connection = AsyncDBConnection()
