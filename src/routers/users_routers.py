@@ -1,21 +1,19 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status
 from src.models.Users_models import UserCreate, UserUpdate, Users  # modelos de usuario
-from src.controllers.users_controllers import (
-    create_user, delete_users, get_users, update_user, get_user_by_id
-)
+from src.controllers.users_controllers import UsersControllers
 
 # Crear un enrutador para manejar las rutas de usuarios
 user_router = APIRouter()
 
 # Ruta para obtener todos los usuarios
 @user_router.get("/users", tags=["users"], response_model=List[Users])
-async def get_all_users():
+async def get_users():
     """
     Obtiene todos los usuarios activos
     """
     try:
-        users = await get_users()  # Llamar a la funcin para obtener usuarios
+        users = await UsersControllers.get_users()  # Llamar a la funcin para obtener usuarios
         return users
     except Exception as e:
         raise HTTPException(
@@ -32,7 +30,7 @@ async def get_user(id_user: int):
     - **id_user**: El ID del usuario a buscar.
     """
     try:
-        user = await get_user_by_id(id_user)  # Llamar a la funcion para obtener un usuario por ID
+        user = await UsersControllers.get_user_by_id(id_user)  # Llamar a la funcion para obtener un usuario por ID
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -54,7 +52,7 @@ async def create_new_user(user: UserCreate):
     - **user**: Datos del usuario a crear.
     """
     try:
-        result = await create_user(user)  # Llamar a la funcion para crear un usuario
+        result = await UsersControllers.create_user(user)  # Llamar a la funcion para crear un usuario
         return result
     except Exception as e:
         raise HTTPException(
@@ -72,7 +70,7 @@ async def update_existing_user(id_user: int, user: UserUpdate):
     - **user**: Datos del usuario a actualizar.
     """
     try:
-        result = await update_user(id_user, user)  # Llamar a la funcion para actualizar un usuario
+        result = await UsersControllers.update_user(id_user, user)  # Llamar a la funcion para actualizar un usuario
         return result
     except Exception as e:
         raise HTTPException(
@@ -84,7 +82,7 @@ async def update_existing_user(id_user: int, user: UserUpdate):
 async def delete_user(id_user):
     """Elimina un usuario existente mediante su ID."""
     try:
-        result = await delete_users(id_user)
+        result = await UsersControllers.delete_users(id_user)
         return result
     except Exception as e:
         raise HTTPException(

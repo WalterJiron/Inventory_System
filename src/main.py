@@ -3,7 +3,10 @@ from fastapi.responses import JSONResponse, Response  # Importacion de tipos de 
 from fastapi.requests import Request   # Importacion del tipo Request para manejar peticiones
 from fastapi.staticfiles import StaticFiles   # Importacion para servir archivos estaticos
 from fastapi.templating import Jinja2Templates   # Importacion del motor de plantillas Jinja2
+
+# Rutas de navegacion
 from src.routers.users_routers import user_router
+from src.routers.almacen_routers import almacen_router
 
 app = FastAPI()
 
@@ -34,4 +37,7 @@ def home() -> JSONResponse:
     return JSONResponse(content= result, status_code= status.HTTP_200_OK)
     
 #----------------------------------- Ruras de Users ----------------------------------- #
-app.include_router(router=user_router)
+app.include_router(router= user_router)
+
+#----------------------------------- Ruras de Almacenes ----------------------------------- #
+app.include_router(router= almacen_router)

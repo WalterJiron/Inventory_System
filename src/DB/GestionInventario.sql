@@ -61,6 +61,7 @@ CREATE TABLE Almacenes (
     Nombre NVARCHAR(100) NOT NULL,
     Direccion NVARCHAR(MAX) NOT NULL,
     Capacidad INT DEFAULT 1, -- Capacidad total del almacén
+    DateCreate DATETIME DEFAULT GETDATE(),
     Estado BIT NOT NULL DEFAULT 1
 );
 GO
