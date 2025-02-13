@@ -13,7 +13,7 @@ async def get_almacenes():
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f'Error al obtener almacenes: {e}'    
+            detail=f'Error al obtener almacenes: {str(e)}'    
         )
 
 @almacen_router.get('/almacen/{id_almacen}', tags=['Almacenes'], response_model= List[Almacen])
@@ -24,7 +24,7 @@ async def get_almacen(id_almacen: int):
     except Exception as e:
         raise HTTPException(
             status_code= status.HTTP_404_NOT_FOUND,
-            detail= f'Error al obtener almacen: {e}'
+            detail= f'Error al obtener almacen: {str(e)}'
         )
     
 @almacen_router.post('/almacen', tags=['Almacenes'], status_code= status.HTTP_201_CREATED)
@@ -35,7 +35,7 @@ async def almacen_create(almacen: AlmacenCreate):
     except Exception as e:
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
-            detail= f'Error al crear un almacen: {e}'
+            detail= f'Error al crear un almacen: {str(e)}'
         )
     
 @almacen_router.put('/almacen/{id_almacen}', tags=['Almacenes'])
@@ -46,7 +46,7 @@ async def almacen_update(id_almacen: int, almacen: AlmacenUpdate)  -> dict:
     except Exception as e:
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
-            detail= f'Error al actualizar el almacen: {e}'
+            detail= f'Error al actualizar el almacen: {str(e)}'
         )
         
 @almacen_router.delete('/almacen/{id_almacen}', tags=['Almacenes'])
@@ -57,5 +57,5 @@ async def almacen_delete(id_almacen: int):
     except Exception as e:
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
-            detail= f'Error al eliminar el almacen: {e}'
+            detail= f'Error al eliminar el almacen: {str(e)}'
         )

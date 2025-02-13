@@ -23,11 +23,12 @@ class AlmacenesControllers:
                     query = """
                         SELECT AlmacenID, Nombre, Direccion, Capacidad, DateCreate 
                         FROM Almacenes 
-                        WHERE Estado = 1
+                        WHERE Estado = 1;
                     """
                     await cursor.execute(query)
                     almacenes = await cursor.fetchall()
-                    return [AlmacenesControllers.__convert_to_almacen(almacen) for almacen in almacenes]
+                    return [AlmacenesControllers.__convert_to_almacen(almacen) 
+                            for almacen in almacenes]
                     
         except Exception as e:
             raise Exception(f"Error al obtener almacenes: {str(e)}")

@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates   # Importacion del motor de plan
 # Rutas de navegacion
 from src.routers.users_routers import user_router
 from src.routers.almacen_routers import almacen_router
+from src.routers.category_routers import category_router
 
 app = FastAPI()
 
@@ -41,3 +42,6 @@ app.include_router(router= user_router)
 
 #----------------------------------- Ruras de Almacenes ----------------------------------- #
 app.include_router(router= almacen_router)
+
+#----------------------------------- Ruras de Categorias ----------------------------------- #
+app.include_router(router= category_router)
