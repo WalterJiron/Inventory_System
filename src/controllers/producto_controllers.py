@@ -1,11 +1,12 @@
-from src.models.producto_models import Producto, ProductoCreate, ProductoUpdate
-from src.BD import get_connection
+from src.models.Producto_models import Producto, ProductoCreate, ProductoUpdate
+from src.db_config import get_connection
 from typing import List, Optional
+import asyncio
 
 class ProductoControllers:
     @staticmethod
     def __convert_to_producto(producto_data: tuple) -> Producto:
-        """Convierte una tupla de datos de la base de datos en una clase Producto."""
+        """Convierte una tupla de datos de la base de datos en un objeto Producto."""
         return Producto(
             id_Produc=producto_data[0],
             nombre=producto_data[1],
@@ -24,17 +25,22 @@ class ProductoControllers:
     async def get_productos() -> List[Producto]:
         """Obtiene todos los productos activos de la base de datos."""
         try:
-            async with await get_connection() as connection:
-                async with connection.cursor() as cursor:
-                    query = """
-                        SELECT * 
-                        FROM Producto
-                        WHERE EstadoProduc = 1;
-                    """
-                    await cursor.execute(query)
-                    productos = await cursor.fetchall()
-                    return [ProductoControllers.__convert_to_producto(producto) 
-                            for producto in productos]
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+            
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            query = """
+                SELECT * 
+                FROM Producto
+                WHERE EstadoProduc = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, query)
+            productos = await loop.run_in_executor(None, cursor.fetchall)
+            
+            return [ProductoControllers.__convert_to_producto(producto) for producto in productos]
         except Exception as e:
             raise Exception(f"Error al obtener productos: {str(e)}")
 
@@ -42,19 +48,24 @@ class ProductoControllers:
     async def get_producto_by_id(producto_id: int) -> Optional[Producto]:
         """Obtiene un producto por su ID si está activo."""
         try:
-            async with await get_connection() as connection:
-                async with connection.cursor() as cursor:
-                    query = """
-                        SELECT * 
-                        FROM Producto
-                        WHERE EstadoProduc = 1 AND IDProducto = ?;
-                    """
-                    await cursor.execute(query, (producto_id,))
-                    producto = await cursor.fetchone()
-
-                    if producto is None:
-                        return None
-                    return ProductoControllers.__convert_to_producto(producto)
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+            
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            query = """
+                SELECT * 
+                FROM Producto
+                WHERE EstadoProduc = 1 AND IDProducto = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, query, (producto_id,))
+            producto = await loop.run_in_executor(None, cursor.fetchone)
+            
+            if producto is None:
+                return None
+            return ProductoControllers.__convert_to_producto(producto)
         except Exception as e:
             raise Exception(f"Error al obtener el producto por ID: {str(e)}")
 
@@ -62,31 +73,40 @@ class ProductoControllers:
     async def create_producto(producto: ProductoCreate) -> dict:
         """Crea un nuevo producto en la base de datos."""
         try:
-            async with await get_connection() as connection:
-                async with connection.cursor() as cursor:
-                    query = """
-                        INSERT INTO Producto (
-                            Nombre, Descripcion, Precio, IdCategory, ProveedorID, 
-                            UnidadID, UbicacionID, SKU, Stock
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-                    """
-                    await cursor.execute(query, (
-                        producto.nombre,
-                        producto.descripcion,
-                        producto.precio,
-                        producto.id_categoria,
-                        producto.proveedor_id,
-                        producto.unidad_id,
-                        producto.ubicacion_id,
-                        producto.sku,
-                        producto.stock
-                    ))
-                    await connection.commit()
-
-                    # Obtener el ID del producto recién creado
-                    producto_id = cursor.lastrowid
-
-                    return {"message": "Producto creado exitosamente", "id_Produc": producto_id}
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+            
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            query = """
+                INSERT INTO Producto (
+                    Nombre, Descripcion, Precio, IdCategory, ProveedorID, 
+                    UnidadID, UbicacionID, SKU, Stock
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                SELECT SCOPE_IDENTITY() AS IDProducto;
+            """
+            await loop.run_in_executor(
+                None, 
+                cursor.execute, 
+                query, 
+                (
+                    producto.nombre,
+                    producto.descripcion,
+                    producto.precio,
+                    producto.id_categoria,
+                    producto.proveedor_id,
+                    producto.unidad_id,
+                    producto.ubicacion_id,
+                    producto.sku,
+                    producto.stock
+                )
+            )
+            id_producto = (await loop.run_in_executor(None, cursor.fetchone))[0]
+            await conn.commit()
+            
+            return {"message": "Producto creado exitosamente", "id_Produc": id_producto}
         except Exception as e:
             raise Exception(f"Error al crear el producto: {str(e)}")
 
@@ -94,109 +114,101 @@ class ProductoControllers:
     async def update_producto(producto_id: int, producto: ProductoUpdate) -> dict:
         """Actualiza un producto existente en la base de datos."""
         try:
-            async with await get_connection() as connection:
-                async with connection.cursor() as cursor:
-                    # Verificar si el producto existe y está activo
-                    check_query = """
-                        SELECT EstadoProduc 
-                        FROM Producto 
-                        WHERE IDProducto = ? AND EstadoProduc = 1
-                    """
-                    await cursor.execute(check_query, (producto_id,))
-                    result = await cursor.fetchone()
-
-                    if not result:
-                        raise Exception("Producto no encontrado o inactivo")
-
-                    # Construir la consulta dinámica
-                    update_parts = []
-                    params = []
-
-                    if producto.nombre is not None:
-                        update_parts.append("nombre = ?")
-                        params.append(producto.nombre)
-
-                    if producto.descripcion is not None:
-                        update_parts.append("descripcion = ?")
-                        params.append(producto.descripcion)
-
-                    if producto.precio is not None:
-                        update_parts.append("precio = ?")
-                        params.append(producto.precio)
-
-                    if producto.id_categoria is not None:
-                        update_parts.append("id_categoria = ?")
-                        params.append(producto.id_categoria)
-
-                    if producto.proveedor_id is not None:
-                        update_parts.append("proveedor_id = ?")
-                        params.append(producto.proveedor_id)
-
-                    if producto.unidad_id is not None:
-                        update_parts.append("unidad_id = ?")
-                        params.append(producto.unidad_id)
-
-                    if producto.ubicacion_id is not None:
-                        update_parts.append("ubicacion_id = ?")
-                        params.append(producto.ubicacion_id)
-
-                    if producto.sku is not None:
-                        update_parts.append("sku = ?")
-                        params.append(producto.sku)
-
-                    if producto.stock is not None:
-                        update_parts.append("stock = ?")
-                        params.append(producto.stock)
-
-                    if not update_parts:
-                        raise Exception("No se proporcionaron campos para actualizar")
-
-                    # Agregar el ID del producto al final de los parámetros
-                    params.append(producto_id)
-
-                    # Construir la consulta final
-                    query = f"""
-                        UPDATE Producto SET
-                            {', '.join(update_parts)}
-                        WHERE IDProducto = ?
-                    """
-
-                    await cursor.execute(query, params)
-                    await connection.commit()
-
-                    return {"message": "Producto actualizado exitosamente"}
-
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+            
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            check_query = """
+                SELECT EstadoProduc 
+                FROM Producto 
+                WHERE IDProducto = ? AND EstadoProduc = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query, (producto_id,))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+            
+            if not result:
+                raise Exception("Producto no encontrado o inactivo")
+            
+            update_parts = []
+            params = []
+            
+            if producto.nombre is not None:
+                update_parts.append("Nombre = ?")
+                params.append(producto.nombre)
+            if producto.descripcion is not None:
+                update_parts.append("Descripcion = ?")
+                params.append(producto.descripcion)
+            if producto.precio is not None:
+                update_parts.append("Precio = ?")
+                params.append(producto.precio)
+            if producto.id_categoria is not None:
+                update_parts.append("IdCategory = ?")
+                params.append(producto.id_categoria)
+            if producto.proveedor_id is not None:
+                update_parts.append("ProveedorID = ?")
+                params.append(producto.proveedor_id)
+            if producto.unidad_id is not None:
+                update_parts.append("UnidadID = ?")
+                params.append(producto.unidad_id)
+            if producto.ubicacion_id is not None:
+                update_parts.append("UbicacionID = ?")
+                params.append(producto.ubicacion_id)
+            if producto.sku is not None:
+                update_parts.append("SKU = ?")
+                params.append(producto.sku)
+            if producto.stock is not None:
+                update_parts.append("Stock = ?")
+                params.append(producto.stock)
+            
+            if not update_parts:
+                raise Exception("No se proporcionaron campos para actualizar")
+            
+            params.append(producto_id)
+            query = f"""
+                UPDATE Producto SET
+                    {', '.join(update_parts)}
+                WHERE IDProducto = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, query, params)
+            await conn.commit()
+            
+            return {"message": "Producto actualizado exitosamente"}
         except Exception as e:
             raise Exception(f"Error al actualizar el producto: {str(e)}")
 
     @staticmethod
     async def delete_producto(producto_id: int) -> dict:
-        """Elimina un producto de la base de datos (eliminación lógica)."""
+        """Elimina un producto de la base de datos (eliminacion logica)."""
         try:
-            async with await get_connection() as connection:
-                async with connection.cursor() as cursor:
-                    # Verificar si el producto existe y está activo
-                    check_query = """
-                        SELECT EstadoProduc 
-                        FROM Producto 
-                        WHERE IDProducto = ? AND EstadoProduc = 1
-                    """
-                    await cursor.execute(check_query, (producto_id,))
-                    result = await cursor.fetchone()
-
-                    if not result:
-                        raise Exception("Producto no encontrado o ya está inactivo")
-
-                    # Realizar la eliminación lógica (establecer Estado = 0)
-                    query = """
-                        UPDATE Producto SET
-                            EstadoProduc = 0
-                        WHERE IDProducto = ?
-                    """
-                    await cursor.execute(query, (producto_id,))
-                    await connection.commit()
-
-                    return {"message": "Producto eliminado exitosamente"}
-
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+            
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            check_query = """
+                SELECT EstadoProduc 
+                FROM Producto 
+                WHERE IDProducto = ? AND EstadoProduc = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query, (producto_id,))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+            
+            if not result:
+                raise Exception("Producto no encontrado o ya inactivo")
+            
+            query = """
+                UPDATE Producto SET
+                    EstadoProduc = 0
+                WHERE IDProducto = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, query, (producto_id,))
+            await conn.commit()
+            
+            return {"message": "Producto eliminado exitosamente"}
         except Exception as e:
             raise Exception(f"Error al eliminar el producto: {str(e)}")
