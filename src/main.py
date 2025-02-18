@@ -8,6 +8,8 @@ from fastapi.templating import Jinja2Templates   # Importacion del motor de plan
 from src.routers.users_routers import user_router
 from src.routers.almacen_routers import almacen_router
 from src.routers.category_routers import category_router
+from src.routers.inventory_movement_routers import inven_mov_router
+from src.routers.products_routers import products_router
 
 app = FastAPI()
 
@@ -33,9 +35,14 @@ async def  http_error_handle(request: Request, call_nex) -> Response | JSONRespo
         return JSONResponse(content= content, status_code= status_code)
     
 @app.get('/', tags=['Home'])
-def home() -> JSONResponse:
-    result = {'message':'Holaaa'}
-    return JSONResponse(content= result, status_code= status.HTTP_200_OK)
+def home(request: Request):
+    saludo = {'mensaje': 'Que nota!'}
+
+    # asi mandamos una respuesta de tipo JSON al HTML
+    return templates.TemplateResponse(
+        'index.html', {'request': request, 'saludo': saludo['mensaje']}, 
+        status_code= status.HTTP_200_OK
+        )
     
 #----------------------------------- Ruras de Users ----------------------------------- #
 app.include_router(router= user_router)
@@ -45,3 +52,9 @@ app.include_router(router= almacen_router)
 
 #----------------------------------- Ruras de Categorias ----------------------------------- #
 app.include_router(router= category_router)
+
+#----------------------------------- Ruras de Movimientos de Inventario ----------------------------------- #
+app.include_router(router= inven_mov_router)
+
+#----------------------------------- Ruras de Productos ----------------------------------- #
+app.include_router(router= products_router)

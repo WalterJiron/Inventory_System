@@ -52,6 +52,17 @@ class MovimientoInventarioControllers:
             
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
+
+            check_query = """
+                SELECT EstadoMovimiento
+                FROM MovimientoInventario
+                WHERE id_MIV = ? AND EstadoMovimiento = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query, (movimiento_id,))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+            
+            if not result:
+                raise Exception("Movimiento no encontrado o inactivo")
             
             query = """
                 SELECT id_MIV, id_producto, cantidad, tipo_movimiento, fecha_movimiento, id_user, almacen_id, comentario

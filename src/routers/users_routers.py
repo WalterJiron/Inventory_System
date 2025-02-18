@@ -62,7 +62,7 @@ async def create_new_user(user: UserCreate):
 
 # Ruta para actualizar un usuario existente
 @user_router.put("/users/{id_user}", tags=["users"])
-async def update_existing_user(id_user: int, user: UserUpdate):
+async def update_existing_user(id_user: int, user: UserUpdate) -> dict:
     """
     Actualiza un usuario existente.
 
@@ -79,7 +79,7 @@ async def update_existing_user(id_user: int, user: UserUpdate):
         )
     
 @user_router.delete("/users/{id_user}", tags=['users'])
-async def delete_user(id_user):
+async def delete_user(id_user: int) -> dict:
     """Elimina un usuario existente mediante su ID."""
     try:
         result = await UsersControllers.delete_users(id_user)

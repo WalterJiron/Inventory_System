@@ -3,7 +3,7 @@ from src.db_config import get_connection
 from typing import List, Optional
 import asyncio
 
-class ProductoControllers:
+class ProductosControllers:
     @staticmethod
     def __convert_to_producto(producto_data: tuple) -> Producto:
         """Convierte una tupla de datos de la base de datos en un objeto Producto."""
@@ -40,7 +40,7 @@ class ProductoControllers:
             await loop.run_in_executor(None, cursor.execute, query)
             productos = await loop.run_in_executor(None, cursor.fetchall)
             
-            return [ProductoControllers.__convert_to_producto(producto) for producto in productos]
+            return [ProductosControllers.__convert_to_producto(producto) for producto in productos]
         except Exception as e:
             raise Exception(f"Error al obtener productos: {str(e)}")
 
@@ -54,6 +54,17 @@ class ProductoControllers:
             
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
+
+            check_query = """
+                SELECT EstadoProduc 
+                FROM Producto 
+                WHERE IDProducto = ? AND EstadoProduc = 1
+            """ 
+            await loop.run_in_executor(None, cursor.execute, check_query, (producto_id,))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not result:
+                raise Exception("Producto no encontrado o inactivo")
             
             query = """
                 SELECT * 
@@ -65,7 +76,7 @@ class ProductoControllers:
             
             if producto is None:
                 return None
-            return ProductoControllers.__convert_to_producto(producto)
+            return ProductosControllers.__convert_to_producto(producto)
         except Exception as e:
             raise Exception(f"Error al obtener el producto por ID: {str(e)}")
 
