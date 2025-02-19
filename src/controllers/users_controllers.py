@@ -106,6 +106,26 @@ class UsersControllers:
             raise Exception(f"Error al crear usuario: {str(e)}")
 
     @staticmethod
+    def __update_parts(user: UserUpdate) -> tuple:
+        """Construye las partes de la consulta de actualizacion."""
+        update_parts = []
+        params = []
+        
+        if user.NameUser:
+            update_parts.append("NameUser = ?")
+            params.append(user.NameUser)
+        
+        if user.Clave:
+            update_parts.append("Clave = ?")
+            params.append(user.Clave)
+        
+        if user.RolID:
+            update_parts.append("RolID = ?")
+            params.append(user.RolID)
+        
+        return update_parts, params
+
+    @staticmethod
     async def update_user(id_user: int, user: UserUpdate) -> dict:
         """Actualiza un usuario existente en la base de datos."""
         try:
@@ -130,20 +150,7 @@ class UsersControllers:
                 raise Exception("Usuario no encontrado o inactivo")
             
             # Construir la consulta UPDATE dinámicamente
-            update_parts = []
-            params = []
-            
-            if user.NameUser is not None:
-                update_parts.append("NameUser = ?")
-                params.append(user.NameUser)
-                
-            if user.Clave is not None:
-                update_parts.append("Clave = ?")
-                params.append(user.Clave)
-                
-            if user.RolID is not None:
-                update_parts.append("RolID = ?")
-                params.append(user.RolID)
+            update_parts, params = UsersControllers.__update_parts(user)
                 
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")

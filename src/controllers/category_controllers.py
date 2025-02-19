@@ -95,6 +95,20 @@ class CategoryControllers:
             raise Exception(f'Error al crear categoria: {str(e)}')
         
     @staticmethod
+    def __update_parts(category: update_categia) -> tuple:
+        """Construye una lista de partes a actualizar en la base de datos."""
+        update_parts = []
+        params = []
+
+        if category.NameCategoria is not None:
+            update_parts.append('Nombre = ?')
+            params.append(category.NameCategoria)
+        if category.DescripcionCate is not None:
+            update_parts.append('Descripcion = ?')
+            params.append(category.DescripcionCate)
+        return update_parts, params
+
+    @staticmethod
     async def category_update(id_category: int, category: update_categia) -> dict:
         """Actualiza una categoria existente en la base de datos."""
         try:
@@ -118,16 +132,7 @@ class CategoryControllers:
             if not result:
                 raise Exception("Categoria no encontrada o inactiva")
             
-            update_parts = []
-            params = []
-
-            if category.NameCategoria is not None:
-                update_parts.append('Nombre = ?')
-                params.append(category.NameCategoria)
-
-            if category.DescripcionCate is not None:
-                update_parts.append('Descripcion = ?')
-                params.append(category.DescripcionCate)
+            update_parts, params = CategoryControllers.__update_parts(category)
 
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar.")

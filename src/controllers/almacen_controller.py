@@ -102,6 +102,24 @@ class AlmacenesControllers:
         except Exception as e:
             raise Exception(f"Error al crear almacén: {str(e)}")
 
+    @staticmethod
+    def __update_parts(almacen: AlmacenUpdate) -> tuple:
+        """Construye las partes de la consulta de actualizacion."""
+        update_parts = []
+        params = []
+        
+        if almacen.nombre:
+            update_parts.append("Nombre = ?")
+            params.append(almacen.nombre)
+        if almacen.direccion:
+            update_parts.append("Direccion = ?")
+            params.append(almacen.direccion)
+        if almacen.capacidad:
+            update_parts.append("Capacidad = ?")
+            params.append(almacen.capacidad)
+        
+        return update_parts, params
+
     @staticmethod 
     async def almacen_update(almacen_id: int, almacen: AlmacenUpdate) -> dict:
         """Actualiza un almacén existente en la base de datos."""
@@ -124,20 +142,7 @@ class AlmacenesControllers:
             if not result:
                 raise Exception("Almacén no encontrado o inactivo")
             
-            update_parts = []
-            params = []
-            
-            if almacen.nombre is not None:
-                update_parts.append("Nombre = ?")
-                params.append(almacen.nombre)
-                        
-            if almacen.direccion is not None:
-                update_parts.append("Direccion = ?")
-                params.append(almacen.direccion)
-                        
-            if almacen.capacidad is not None:
-                update_parts.append("Capacidad = ?")
-                params.append(almacen.capacidad)
+            update_parts, params = AlmacenesControllers.__update_parts(almacen)
                         
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")

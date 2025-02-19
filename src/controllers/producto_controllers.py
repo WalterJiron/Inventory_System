@@ -120,6 +120,42 @@ class ProductosControllers:
             return {"message": "Producto creado exitosamente", "id_Produc": id_producto}
         except Exception as e:
             raise Exception(f"Error al crear el producto: {str(e)}")
+        
+    @staticmethod
+    def __update_parts(producto: ProductoUpdate) -> tuple:
+        """Retorna una tupla con los campos a actualizar y sus valores."""
+        update_parts = []
+        params = []
+        
+        if producto.nombre is not None:
+            update_parts.append("Nombre = ?")
+            params.append(producto.nombre)
+        if producto.descripcion is not None:
+            update_parts.append("Descripcion = ?")
+            params.append(producto.descripcion)
+        if producto.precio is not None:
+            update_parts.append("Precio = ?")
+            params.append(producto.precio)
+        if producto.id_categoria is not None:
+            update_parts.append("IdCategory = ?")
+            params.append(producto.id_categoria)
+        if producto.proveedor_id is not None:
+            update_parts.append("ProveedorID = ?")
+            params.append(producto.proveedor_id)
+        if producto.unidad_id is not None:
+            update_parts.append("UnidadID = ?")
+            params.append(producto.unidad_id)
+        if producto.ubicacion_id is not None:
+            update_parts.append("UbicacionID = ?")
+            params.append(producto.ubicacion_id)
+        if producto.sku is not None:
+            update_parts.append("SKU = ?")
+            params.append(producto.sku)
+        if producto.stock is not None:
+            update_parts.append("Stock = ?")
+            params.append(producto.stock)
+        
+        return update_parts, params
 
     @staticmethod
     async def update_producto(producto_id: int, producto: ProductoUpdate) -> dict:
@@ -143,36 +179,7 @@ class ProductosControllers:
             if not result:
                 raise Exception("Producto no encontrado o inactivo")
             
-            update_parts = []
-            params = []
-            
-            if producto.nombre is not None:
-                update_parts.append("Nombre = ?")
-                params.append(producto.nombre)
-            if producto.descripcion is not None:
-                update_parts.append("Descripcion = ?")
-                params.append(producto.descripcion)
-            if producto.precio is not None:
-                update_parts.append("Precio = ?")
-                params.append(producto.precio)
-            if producto.id_categoria is not None:
-                update_parts.append("IdCategory = ?")
-                params.append(producto.id_categoria)
-            if producto.proveedor_id is not None:
-                update_parts.append("ProveedorID = ?")
-                params.append(producto.proveedor_id)
-            if producto.unidad_id is not None:
-                update_parts.append("UnidadID = ?")
-                params.append(producto.unidad_id)
-            if producto.ubicacion_id is not None:
-                update_parts.append("UbicacionID = ?")
-                params.append(producto.ubicacion_id)
-            if producto.sku is not None:
-                update_parts.append("SKU = ?")
-                params.append(producto.sku)
-            if producto.stock is not None:
-                update_parts.append("Stock = ?")
-                params.append(producto.stock)
+            update_parts, params = ProductosControllers().__update_parts(producto)
             
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")

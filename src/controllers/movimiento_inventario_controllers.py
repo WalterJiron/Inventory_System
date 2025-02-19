@@ -109,6 +109,38 @@ class MovimientoInventarioControllers:
             raise Exception(f"Error al crear movimiento de inventario: {str(e)}")
 
     @staticmethod
+    def __update_movimiento_parts(movimiento: UpdateMovimientoInventario) -> tuple:
+        """Construye una tupla con los campos a actualizar y sus valores."""
+        update_parts = []
+        params = []
+        
+        if movimiento.cantidad is not None:
+            update_parts.append("cantidad = ?")
+            params.append(movimiento.cantidad)
+        
+        if movimiento.tipo_movimiento is not None:
+            update_parts.append("tipo_movimiento = ?")
+            params.append(movimiento.tipo_movimiento)
+        
+        if movimiento.fecha_movimiento is not None:
+            update_parts.append("fecha_movimiento = ?")
+            params.append(movimiento.fecha_movimiento)
+        
+        if movimiento.id_user is not None:
+            update_parts.append("id_user = ?")
+            params.append(movimiento.id_user)
+        
+        if movimiento.almacen_id is not None:
+            update_parts.append("almacen_id = ?")
+            params.append(movimiento.almacen_id)
+        
+        if movimiento.comentario is not None:
+            update_parts.append("comentario = ?")
+            params.append(movimiento.comentario)
+        
+        return update_parts, params
+
+    @staticmethod
     async def update_movimiento_inventario(movimiento_id: int, movimiento: UpdateMovimientoInventario) -> dict:
         """Actualiza un movimiento de inventario existente."""
         try:
@@ -130,28 +162,7 @@ class MovimientoInventarioControllers:
             if not result:
                 raise Exception("Movimiento no encontrado o inactivo")
             
-            update_parts = []
-            params = []
-            
-            if movimiento.cantidad is not None:
-                update_parts.append("cantidad = ?")
-                params.append(movimiento.cantidad)
-            
-            if movimiento.tipo_movimiento is not None:
-                update_parts.append("tipo_movimiento = ?")
-                params.append(movimiento.tipo_movimiento)
-            
-            if movimiento.id_user is not None:
-                update_parts.append("id_user = ?")
-                params.append(movimiento.id_user)
-            
-            if movimiento.almacen_id is not None:
-                update_parts.append("almacen_id = ?")
-                params.append(movimiento.almacen_id)
-            
-            if movimiento.comentario is not None:
-                update_parts.append("comentario = ?")
-                params.append(movimiento.comentario)
+            update_parts, params = MovimientoInventarioControllers.__update_movimiento_parts(movimiento)
             
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")
