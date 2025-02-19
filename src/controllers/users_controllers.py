@@ -66,8 +66,8 @@ class UsersControllers:
             await loop.run_in_executor(None, cursor.execute, query, (id_user,))
             user = await loop.run_in_executor(None, cursor.fetchone)
             
-            if user is None:
-                return None
+            if not user:
+                raise Exception("Usuario no encontrado o inactivo")
             
             # Convertir el resultado en un objeto Users
             return UsersControllers.__convert_to_user(user)
@@ -86,6 +86,28 @@ class UsersControllers:
             # Ejecutamos el cursor y la consulta en un hilo separado
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
+
+            check_query_name = """
+                SELECT NameUser
+                FROM Usuarios
+                WHERE NameUser = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query_name, (user.NameUser,))
+            verificar_name = await loop.run_in_executor(None, cursor.fetchone)
+
+            if verificar_name:
+                raise Exception("El nombre de usuario ya esta en uso.")
+            
+            check_query_rol = """
+                SELECT RolID
+                FROM Roles
+                WHERE RolID = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query_rol, (user.RolID,))
+            verificar_rol = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not verificar_rol:
+                raise Exception("El RolID no existe.")
             
             # Consulta SQL para insertar un nuevo usuario
             query = """
@@ -106,24 +128,69 @@ class UsersControllers:
             raise Exception(f"Error al crear usuario: {str(e)}")
 
     @staticmethod
-    def __update_parts(user: UserUpdate) -> tuple:
+    async def __update_parts(user: UserUpdate) -> tuple:
         """Construye las partes de la consulta de actualizacion."""
-        update_parts = []
-        params = []
-        
-        if user.NameUser:
-            update_parts.append("NameUser = ?")
-            params.append(user.NameUser)
-        
-        if user.Clave:
-            update_parts.append("Clave = ?")
-            params.append(user.Clave)
-        
-        if user.RolID:
-            update_parts.append("RolID = ?")
-            params.append(user.RolID)
-        
-        return update_parts, params
+        try:
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+                
+            # Ejecutamos el cursor y la consulta en un hilo separado
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            update_parts = []
+            params = []
+            
+            if user.NameUser:
+                check_query = """
+                    SELECT NameUser
+                    FROM Usuarios
+                    WHERE NameUser = ?
+                """
+
+                await loop.run_in_executor(None, cursor.execute, check_query, (user.NameUser,))
+                result = await loop.run_in_executor(None, cursor.fetchone)
+
+                if result:
+                    raise Exception("El nombre de usuario ya esta en uso.")
+
+                update_parts.append("NameUser = ?")
+                params.append(user.NameUser)
+            
+            if user.Clave:
+                check_query = """
+                    SELECT Clave
+                    FROM Usuarios
+                    WHERE Clave = ?
+                """
+                await loop.run_in_executor(None, cursor.execute, check_query, (user.Clave,))
+                result = await loop.run_in_executor(None, cursor.fetchone)
+
+                if result:
+                    raise Exception("La clave ya esta en uso.")
+
+                update_parts.append("Clave = ?")
+                params.append(user.Clave)
+            
+            if user.RolID:
+                check_query = """
+                    SELECT RolID
+                    FROM Roles
+                    WHERE RolID = ?
+                """
+                await loop.run_in_executor(None, cursor.execute, check_query, (user.RolID,))
+                result = await loop.run_in_executor(None, cursor.fetchone)
+
+                if not result:
+                    raise Exception("El RolID no existe.")
+
+                update_parts.append("RolID = ?")
+                params.append(user.RolID)
+            
+            return update_parts, params
+        except Exception as e:
+            raise Exception(f"Error al construir partes de la consulta de actualización: {str(e)}")
 
     @staticmethod
     async def update_user(id_user: int, user: UserUpdate) -> dict:
@@ -154,7 +221,7 @@ class UsersControllers:
                 
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")
-            
+
             # Agregar el ID del usuario a los parámetros
             params.append(id_user)
             
