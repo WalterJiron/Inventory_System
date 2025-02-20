@@ -25,18 +25,13 @@ class UnidadMedidaControllers:
             cursor = await loop.run_in_executor(None, conn.cursor)
             
             query = """
-                INSERT INTO UnidadesMedida (
-                    Nombre, Abreviatura
-                ) VALUES (?, ?);
+                INSERT INTO UnidadesMedida ( Nombre, Abreviatura ) 
+                VALUES (?, ?);
                 SELECT SCOPE_IDENTITY() AS UnidadID;
             """
             await loop.run_in_executor(
-                None, 
-                cursor.execute, 
-                query, 
-                (
-                    unidad_medida.NameUnidadM,
-                    unidad_medida.abreviaturaUnidM
+                None, cursor.execute, query, (
+                    unidad_medida.NameUnidadM, unidad_medida.abreviaturaUnidM 
                 )
             )
             id_unidad_medida = (await loop.run_in_executor(None, cursor.fetchone))[0]
@@ -60,12 +55,15 @@ class UnidadMedidaControllers:
             query = """
                 SELECT * 
                 FROM UnidadesMedida 
-                WHERE Estado = 1
+                WHERE Estado = 1;
             """
             await loop.run_in_executor(None, cursor.execute, query)
             unidades_medida = await loop.run_in_executor(None, cursor.fetchall)
 
-            return [UnidadMedidaControllers.__convert_to_unidad_medida(unidad) for unidad in unidades_medida]
+            return [
+                UnidadMedidaControllers.__convert_to_unidad_medida(unidad) 
+                for unidad in unidades_medida
+            ]
         except Exception as e:
             raise Exception(f"Error al obtener las unidades de medida: {str(e)}")
 
@@ -80,12 +78,12 @@ class UnidadMedidaControllers:
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
 
-            check_query = """
+            query = """
                 SELECT * 
                 FROM UnidadesMedida 
                 WHERE Estado = 1 AND UnidadID = ?
             """
-            await loop.run_in_executor(None, cursor.execute, check_query, (unidad_id,))
+            await loop.run_in_executor(None, cursor.execute, query, (unidad_id,))
             result = await loop.run_in_executor(None, cursor.fetchone)
 
             if not result:
@@ -133,6 +131,7 @@ class UnidadMedidaControllers:
                 raise Exception("Unidad de medida no encontrada o inactiva")
             
             update_parts, params = UnidadMedidaControllers.__update_parts(unidad_medida)
+            
             if not update_parts:
                 raise Exception("No hay campos para actualizar")
             
@@ -164,7 +163,7 @@ class UnidadMedidaControllers:
             check_query = """
                 SELECT Estado 
                 FROM UnidadesMedida 
-                WHERE UnidadID = ? AND Estado = 1
+                WHERE UnidadID = ? AND Estado = 1;
             """
             await loop.run_in_executor(None, cursor.execute, check_query, (unidad_id,))
             result = await loop.run_in_executor(None, cursor.fetchone)
@@ -175,7 +174,7 @@ class UnidadMedidaControllers:
             query = """
                 UPDATE UnidadesMedida 
                 SET Estado = 0 
-                WHERE UnidadID = ?
+                WHERE UnidadID = ?;
             """
             await loop.run_in_executor(None, cursor.execute, query, (unidad_id,))
             await conn.commit()

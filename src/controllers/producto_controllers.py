@@ -190,7 +190,7 @@ class ProductosControllers:
                     {', '.join(update_parts)}
                 WHERE IDProducto = ?
             """
-            await loop.run_in_executor(None, cursor.execute, query, params)
+            await loop.run_in_executor(None, cursor.execute, query, tuple(params))
             await conn.commit()
             
             return {"message": "Producto actualizado exitosamente"}

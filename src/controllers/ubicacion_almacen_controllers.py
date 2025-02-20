@@ -33,7 +33,10 @@ class UbicacionesAlmacenController:
             await loop.run_in_executor(None, cursor.execute, query)
             ubicaciones = await loop.run_in_executor(None, cursor.fetchall)
             
-            return [UbicacionesAlmacenController.__convert_to_ubicacion(ubic) for ubic in ubicaciones]
+            return [
+                UbicacionesAlmacenController.__convert_to_ubicacion(ubic) 
+                for ubic in ubicaciones
+            ]
         except Exception as e:
             raise Exception(f"Error al obtener ubicaciones: {str(e)}")
 
@@ -51,8 +54,11 @@ class UbicacionesAlmacenController:
             query = "SELECT * FROM UbicacionesAlmacen WHERE UbicacionID = ? AND Estado = 1"
             await loop.run_in_executor(None, cursor.execute, query, (ubicacion_id,))
             ubicacion = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not ubicacion:
+                raise Exception("Ubicación no encontrada o inactiva.")
             
-            return UbicacionesAlmacenController.__convert_to_ubicacion(ubicacion) if ubicacion else None
+            return UbicacionesAlmacenController.__convert_to_ubicacion(ubicacion) 
         except Exception as e:
             raise Exception(f"Error al obtener la ubicación por ID: {str(e)}")
 
@@ -72,18 +78,41 @@ class UbicacionesAlmacenController:
                 VALUES (?, ?, ?, ?);
                 SELECT SCOPE_IDENTITY() AS UbicacionID;
             """
-            await loop.run_in_executor(None, cursor.execute, query, (
-                ubicacion.almacen_id,
-                ubicacion.codigo_ubicacion,
-                ubicacion.descripcion,
-                ubicacion.capacidad
-            ))
+            await loop.run_in_executor(
+                None, cursor.execute, query, (
+                    ubicacion.almacen_id,
+                    ubicacion.codigo_ubicacion,
+                    ubicacion.descripcion,
+                    ubicacion.capacidad
+                )
+            )
             id_ubicacion = (await loop.run_in_executor(None, cursor.fetchone))[0]
             await conn.commit()
             
             return {"message": "Ubicación creada exitosamente", "id_ubicacion": id_ubicacion}
         except Exception as e:
             raise Exception(f"Error al crear la ubicación: {str(e)}")
+
+    @staticmethod
+    def __update_params(ubicacion: UbicacionAlmacenUpdate) -> tuple:
+        """Construye las partes de la consulta de actualización."""
+        update_parts = []
+        params = []
+        
+        if ubicacion.almacen_id is not None:
+            update_parts.append("AlmacenID = ?")
+            params.append(ubicacion.almacen_id)
+        if ubicacion.codigo_ubicacion is not None:
+            update_parts.append("CodigoUbicacion = ?")
+            params.append(ubicacion.codigo_ubicacion)
+        if ubicacion.descripcion is not None:
+            update_parts.append("Descripcion = ?")
+            params.append(ubicacion.descripcion)
+        if ubicacion.capacidad is not None:
+            update_parts.append("Capacidad = ?")
+            params.append(ubicacion.capacidad)
+        
+        return update_parts, params
 
     @staticmethod
     async def update_ubicacion(ubicacion_id: int, ubicacion: UbicacionAlmacenUpdate) -> dict:
@@ -96,21 +125,7 @@ class UbicacionesAlmacenController:
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
             
-            update_parts = []
-            params = []
-            
-            if ubicacion.almacen_id is not None:
-                update_parts.append("AlmacenID = ?")
-                params.append(ubicacion.almacen_id)
-            if ubicacion.codigo_ubicacion is not None:
-                update_parts.append("CodigoUbicacion = ?")
-                params.append(ubicacion.codigo_ubicacion)
-            if ubicacion.descripcion is not None:
-                update_parts.append("Descripcion = ?")
-                params.append(ubicacion.descripcion)
-            if ubicacion.capacidad is not None:
-                update_parts.append("Capacidad = ?")
-                params.append(ubicacion.capacidad)
+            update_parts, params = UbicacionesAlmacenController.__update_params(ubicacion)
             
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")
@@ -141,6 +156,11 @@ class UbicacionesAlmacenController:
             
             query = "UPDATE UbicacionesAlmacen SET Estado = 0 WHERE UbicacionID = ?"
             await loop.run_in_executor(None, cursor.execute, query, (ubicacion_id,))
+            delete = await loop.run_in_executor(None, cursor.rowcount)
+
+            if delete == 0:
+                raise Exception("Ubicación no encontrada o ya esta inactiva.")
+            
             await conn.commit()
             
             return {"message": "Ubicación eliminada exitosamente"}

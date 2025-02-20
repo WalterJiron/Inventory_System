@@ -26,15 +26,12 @@ class SubcategoriaControllers:
             cursor = await loop.run_in_executor(None, conn.cursor)
             
             query = """
-                INSERT INTO Subcategoria (
-                    nombre, descripcion, idCategoria
-                ) VALUES (?, ?, ?);
+                INSERT INTO Subcategoria ( nombre, descripcion, idCategoria )
+                VALUES (?, ?, ?);
                 SELECT SCOPE_IDENTITY() AS id_subcategoria;
             """
             await loop.run_in_executor(
-                None, 
-                cursor.execute, 
-                query, 
+                None, cursor.execute, query, 
                 (
                     subcategoria.NameSubCategoria,
                     subcategoria.DescriptionSubCate,
@@ -67,7 +64,10 @@ class SubcategoriaControllers:
             await loop.run_in_executor(None, cursor.execute, query)
             subcategorias = await loop.run_in_executor(None, cursor.fetchall)
 
-            return [SubcategoriaControllers.__convert_to_subcategoria(subcategoria) for subcategoria in subcategorias]
+            return [
+                SubcategoriaControllers.__convert_to_subcategoria(subcategoria) 
+                for subcategoria in subcategorias
+            ]
         except Exception as e:
             raise Exception(f"Error al obtener las subcategorías: {str(e)}")
 
@@ -82,12 +82,12 @@ class SubcategoriaControllers:
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
 
-            check_query = """
+            query = """
                 SELECT * 
                 FROM Subcategoria 
                 WHERE Estado = 1 AND id_subcategoria = ?
             """
-            await loop.run_in_executor(None, cursor.execute, check_query, (subcategoria_id,))
+            await loop.run_in_executor(None, cursor.execute, query, (subcategoria_id,))
             result = await loop.run_in_executor(None, cursor.fetchone)
 
             if not result:
@@ -138,6 +138,7 @@ class SubcategoriaControllers:
                 raise Exception("Subcategoría no encontrada o inactiva")
             
             update_parts, params = SubcategoriaControllers.__update_parts(subcategoria)
+
             if not update_parts:
                 raise Exception("No hay campos para actualizar")
             
@@ -171,7 +172,7 @@ class SubcategoriaControllers:
                 FROM Subcategoria 
                 WHERE id_subcategoria = ? AND Estado = 1
             """
-            await loop.run_in_executor(None, cursor.execute, check_query, (subcategoria_id,))
+            await loop.run_in_executor(None, cursor.execute, check_query, (subcategoria_id))
             result = await loop.run_in_executor(None, cursor.fetchone)
             
             if not result:
@@ -182,7 +183,7 @@ class SubcategoriaControllers:
                 SET Estado = 0 
                 WHERE id_subcategoria = ?
             """
-            await loop.run_in_executor(None, cursor.execute, query, (subcategoria_id,))
+            await loop.run_in_executor(None, cursor.execute, query, (subcategoria_id))
             await conn.commit()
             
             return {"message": "Subcategoría desactivada exitosamente"}

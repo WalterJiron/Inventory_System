@@ -1,4 +1,12 @@
-2) Tambien hay que ver algunos campos de fecha de algunas tablas.
+1) agregar mas validaciones y dar mejor formato.  (Mas a futuro)
 
-3) agregar mas validaciones y dar mejor formato.
+2) Faltan validaciones en los update y deletes (yo lo voy a hacer)
 
+
+----------------- SOLO AGREGA ESTO
+3) falta el delete de Proveedores 
+
+4) Tambien falta el delete en Transferencias
+
+Jostin: lo controllers que subiste son desde: Proveedores hasta unidad_medida.
+ 

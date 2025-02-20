@@ -31,11 +31,18 @@ class TransferenciasControllers:
             
             query = """
                 SELECT * FROM Transferencias
+                WHERE EstadoTransferencia = 1;
             """
             await loop.run_in_executor(None, cursor.execute, query)
             transferencias = await loop.run_in_executor(None, cursor.fetchall)
+
+            if not transferencias:
+                raise Exception("No se encontraron transferencias.")
             
-            return [TransferenciasControllers.__convert_to_transferencia(tr) for tr in transferencias]
+            return [
+                TransferenciasControllers.__convert_to_transferencia(tr) 
+                for tr in transferencias
+            ]
         
         except Exception as e:
             raise Exception(f"Error al obtener transferencias: {str(e)}")
@@ -52,9 +59,10 @@ class TransferenciasControllers:
             cursor = await loop.run_in_executor(None, conn.cursor)
             
             query = """
-                SELECT * FROM Transferencias WHERE TransferenciaID = ?
+                SELECT * FROM Transferencias 
+                WHERE TransferenciaID = ? AND EstadoTransferencia = 1;
             """
-            await loop.run_in_executor(None, cursor.execute, query, (id_trasFe,))
+            await loop.run_in_executor(None, cursor.execute, query, (id_trasFe))
             transferencia = await loop.run_in_executor(None, cursor.fetchone)
             
             if not transferencia:
@@ -77,19 +85,23 @@ class TransferenciasControllers:
             cursor = await loop.run_in_executor(None, conn.cursor)
             
             query = """
-                INSERT INTO Transferencias (IDProducto, Cantidad, AlmacenOrigenID, AlmacenDestinoID, FechaTransferencia, IdUser, Comentario)
-                VALUES (?, ?, ?, ?, GETDATE(), ?, ?);
+                INSERT INTO Transferencias 
+                (IDProducto, Cantidad, AlmacenOrigenID, AlmacenDestinoID, IdUser, Comentario)
+                VALUES (?, ?, ?, ?, ?, ?);
                 SELECT SCOPE_IDENTITY() AS TransferenciaID;
             """
             
-            await loop.run_in_executor(None, cursor.execute, query, (
-                transferencia.id_producto,
-                transferencia.cantidad,
-                transferencia.almacen_origen_id,
-                transferencia.almacen_destino_id,
-                transferencia.id_user,
-                transferencia.comentario
-            ))
+            await loop.run_in_executor(
+                None, cursor.execute, query, 
+                (
+                    transferencia.id_producto,
+                    transferencia.cantidad,
+                    transferencia.almacen_origen_id,
+                    transferencia.almacen_destino_id,
+                    transferencia.id_user,
+                    transferencia.comentario
+                )
+            )
             id_transferencia = (await loop.run_in_executor(None, cursor.fetchone))[0]
             await conn.commit()
             
@@ -97,6 +109,35 @@ class TransferenciasControllers:
         
         except Exception as e:
             raise Exception(f"Error al crear transferencia: {str(e)}")
+
+    def __update_params(transferencia: TransferenciaUpdate) -> tuple:
+        """Construye los campos a actualizar en la base de datos."""
+        update_parts = []
+        params = []
+        
+        if transferencia.id_producto:
+            update_parts.append("IDProducto = ?")
+            params.append(transferencia.id_producto)
+        if transferencia.cantidad:
+            update_parts.append("Cantidad = ?")
+            params.append(transferencia.cantidad)
+        if transferencia.almacen_origen_id:
+            update_parts.append("AlmacenOrigenID = ?")
+            params.append(transferencia.almacen_origen_id)
+        if transferencia.almacen_destino_id:
+            update_parts.append("AlmacenDestinoID = ?")
+            params.append(transferencia.almacen_destino_id)
+        if transferencia.id_user:
+            update_parts.append("IdUser = ?")
+            params.append(transferencia.id_user)
+        if transferencia.comentario:
+            update_parts.append("Comentario = ?")
+            params.append(transferencia.comentario)
+        if transferencia.estado_transferencia:
+            update_parts.append("EstadoTransferencia = ?")
+            params.append(transferencia.estado_transferencia)
+        
+        return update_parts, params 
 
     @staticmethod
     async def update_transferencia(id_trasFe: int, transferencia: TransferenciaUpdate) -> dict:
@@ -109,30 +150,7 @@ class TransferenciasControllers:
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
             
-            update_parts = []
-            params = []
-            
-            if transferencia.id_producto:
-                update_parts.append("IDProducto = ?")
-                params.append(transferencia.id_producto)
-            if transferencia.cantidad:
-                update_parts.append("Cantidad = ?")
-                params.append(transferencia.cantidad)
-            if transferencia.almacen_origen_id:
-                update_parts.append("AlmacenOrigenID = ?")
-                params.append(transferencia.almacen_origen_id)
-            if transferencia.almacen_destino_id:
-                update_parts.append("AlmacenDestinoID = ?")
-                params.append(transferencia.almacen_destino_id)
-            if transferencia.id_user:
-                update_parts.append("IdUser = ?")
-                params.append(transferencia.id_user)
-            if transferencia.comentario:
-                update_parts.append("Comentario = ?")
-                params.append(transferencia.comentario)
-            if transferencia.estado_transferencia:
-                update_parts.append("EstadoTransferencia = ?")
-                params.append(transferencia.estado_transferencia)
+            update_parts, params = TransferenciasControllers.__update_params(transferencia)
             
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")
@@ -144,7 +162,7 @@ class TransferenciasControllers:
                 WHERE TransferenciaID = ?
             """
             
-            await loop.run_in_executor(None, cursor.execute, query, params)
+            await loop.run_in_executor(None, cursor.execute, query, tuple(params))
             await conn.commit()
             
             return {"message": "Transferencia actualizada exitosamente"}

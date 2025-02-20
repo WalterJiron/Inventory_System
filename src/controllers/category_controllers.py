@@ -144,7 +144,7 @@ class CategoryControllers:
                 WHERE IdCategoria = ?
             """
            
-            await loop.run_in_executor(None, cursor.execute, query, params)
+            await loop.run_in_executor(None, cursor.execute, query, tuple(params))
             await conn.commit()
 
             return {"message": "Categoria actualizada exitosamente."}

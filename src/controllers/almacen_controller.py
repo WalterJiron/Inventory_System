@@ -155,7 +155,7 @@ class AlmacenesControllers:
                 WHERE AlmacenID = ?
             """
                     
-            await loop.run_in_executor(None, cursor.execute, query, params)
+            await loop.run_in_executor(None, cursor.execute, query, tuple(params))
             await loop.run_in_executor(None, conn.commit)
             
             cursor.close()

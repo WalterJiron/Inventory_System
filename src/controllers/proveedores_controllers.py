@@ -99,6 +99,27 @@ class ProveedoresControllers:
             raise Exception(f"Error al crear proveedor: {str(e)}")
 
     @staticmethod
+    def __generate_update_parts(prov: ProveedorUpdate) -> tuple:
+        """Genera las partes de la consulta de actualizacion."""
+        update_parts = []
+        params = []
+        
+        if prov.nombre:
+            update_parts.append("Nombre = ?")
+            params.append(prov.nombre)
+        if prov.telefono:
+            update_parts.append("Telefono = ?")
+            params.append(prov.telefono)
+        if prov.email:
+            update_parts.append("Email = ?")
+            params.append(prov.email)
+        if prov.direccion:
+            update_parts.append("Direccion = ?")
+            params.append(prov.direccion)
+        
+        return update_parts, params
+
+    @staticmethod
     async def update_proveedor(id_prov: int, prov: ProveedorUpdate) -> dict:
         """Actualiza un proveedor existente en la base de datos."""
         try:
@@ -115,21 +136,7 @@ class ProveedoresControllers:
             if not result:
                 raise Exception("Proveedor no encontrado o inactivo")
             
-            update_parts = []
-            params = []
-            
-            if prov.nombre:
-                update_parts.append("Nombre = ?")
-                params.append(prov.nombre)
-            if prov.telefono:
-                update_parts.append("Telefono = ?")
-                params.append(prov.telefono)
-            if prov.email:
-                update_parts.append("Email = ?")
-                params.append(prov.email)
-            if prov.direccion:
-                update_parts.append("Direccion = ?")
-                params.append(prov.direccion)
+            update_parts, params = ProveedoresControllers.__generate_update_parts(prov)
             
             if not update_parts:
                 raise Exception("No se proporcionaron campos para actualizar")
@@ -140,7 +147,7 @@ class ProveedoresControllers:
                     {', '.join(update_parts)}
                 WHERE ProveedorID = ?
             """
-            await loop.run_in_executor(None, cursor.execute, query, params)
+            await loop.run_in_executor(None, cursor.execute, query, tuple(params))
             await conn.commit()
             return {"message": "Proveedor actualizado exitosamente"}
         

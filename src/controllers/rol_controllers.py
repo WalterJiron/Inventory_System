@@ -13,11 +13,12 @@ class RolControllers:
             descrip_rl=rol_data[2],
             creation_date=rol_data[3]
         )
+    
     @staticmethod
     async def get_rol() -> List[Rol]:
         """Obtiene todos los roles activos de la base de datos """
         try:
-            conn = await.get_connection()
+            conn = await get_connection()
             if conn is None:
                 raise Exception("No se puede conectar a la base de datos")
             
@@ -30,9 +31,9 @@ class RolControllers:
                 WHERE EstadoRol = 1
             """
             await loop.run_in_executor(None,cursor.execute, query)
-            rol = await loop.run_in_executor(None, cursor.fetchall)
+            rols = await loop.run_in_executor(None, cursor.fetchall)
 
-            return [RolControllers.__convert_to_rol(rol) for i in rol]
+            return [RolControllers.__convert_to_rol(rol) for rol in rols]
         except Exception as e:
             raise Exception(f"Error al obtener productos: {str(e)}")
 
@@ -40,23 +41,13 @@ class RolControllers:
     async def get_rol_by_id(rol_id: int) -> Optional[Rol]:
         """Obtiene un rol por su ID si esta activo.""" 
         try:
-            conn = await.get_connection()
+            conn = await get_connection()
             if conn is None:
                 raise Exception("No se puede conectar a la base de datos")
             
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
-
-            check_query = """
-                SELECT * 
-                FROM Roles 
-                WHERE EstadoRol = 1 AND RolID = ?
-            """
-            await loop.run_in_executor(None,cursor.execute, check_query)
-            result = await loop.run_in_executor(None, cursor.fetchone)
-
-            if not result:
-                    raise Exception("Rol no encontrado o inactivo")
+                    
             query ="""
                     SELECT * 
                     FROM Producto
@@ -65,8 +56,9 @@ class RolControllers:
             await loop.run_in_executor(None, cursor.execute, query, (rol_id))
             rol = await loop.run_in_executor(None, cursor.fetchone)
             
-            if rol is None:
-                    return None
+            if not rol:
+                raise Exception("Rol no encontrado o inactivo")
+            
             return RolControllers.__convert_to_producto(rol)
         except Exception as e:
             raise Exception(f"Error al obtener el rol por id: {str(e)}")
@@ -83,19 +75,12 @@ class RolControllers:
             cursor = await loop.run_in_executor(None, conn.cursor)
             
             query = """
-                INSERT INTO Roles (
-                    NameRol, DescripRol
-                ) VALUES (?, ?);
+                INSERT INTO Roles ( NameRol, DescripRol ) 
+                VALUES (?, ?);
                 SELECT SCOPE_IDENTITY() AS RolID;
             """
             await loop.run_in_executor(
-                None, 
-                cursor.execute, 
-                query, 
-                (
-                    rol.NameRol,
-                    rol.descrip_rol
-                )
+                None, cursor.execute, query, ( rol.NameRol, rol.descrip_rol )
             )
             id_rol = (await loop.run_in_executor(None, cursor.fetchone))[0]
             await conn.commit()
@@ -103,7 +88,6 @@ class RolControllers:
             return {"message": "Rol creado exitosamente", "id_Rol": id_rol}
         except Exception as e:
             raise Exception(f"Error al crear el rol: {str(e)}")
-
 
     @staticmethod
     def __update_parts(rol: UpdateRol) -> tuple:
