@@ -1,52 +1,31 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from datetime import datetime
 
 class Proveedor(BaseModel):
-    id_Prov: int
+    proveedor_id: int  # Cambio de id_Prov a proveedor_id
     nombre: str
     telefono: str
-    email: str
+    email: EmailStr
     direccion: Optional[str] = None
-    fecha_creacion: datetime 
+    fecha_creacion: datetime
+    estado: bool = True  # Agregado para coincidir con EstadoProv
 
     class Config:
         arbitrary_types_allowed = True
 
 class ProveedorCreate(BaseModel):
-    nombre: str = Field(
-        min_length=3, max_length=50, 
-        description="Nombre del proveedor"
-    )
-    telefono: str = Field(
-        regex=r'^[\+\-]?[0-9]{8,15}$', 
-        description="Teléfono del proveedor",
-        min_length=8, max_length=15
-    )
-    email: str = Field(
-        regex=r'^\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b$', 
-        description="Correo electrónico del proveedor"
-    )
-    direccion: Optional[str] = Field(
-        None, max_length=250, 
-        description="Dirección del proveedor"
-    )
+    nombre: str = Field(min_length=3, max_length=50)
+    telefono: str = Field(regex=r'^\+?[0-9]{8,15}$', min_length=8, max_length=15)
+    email: EmailStr
+    direccion: Optional[str] = Field(None, max_length=250)
+    fecha_creacion: datetime = Field(default_factory=datetime.now)  # Default automático
+    estado: bool = True  # Incluido para coherencia con la base de datos
 
 class ProveedorUpdate(BaseModel):
-    nombre: Optional[str] = Field(
-        None, min_length=3, max_length=50, 
-        description="Nombre del proveedor"
-    )
-    telefono: Optional[str] = Field(
-        None, regex=r'^[\+\-]?[0-9]{8,15}$', 
-        min_length=8, max_length=15, 
-        description="Teléfono del proveedor"
-    )
-    email: Optional[str] = Field(
-        None, regex=r'^\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b$', 
-        description="Correo electrónico del proveedor"
-    )
-    direccion: Optional[str] = Field(
-        None, max_length=100, 
-        description="Dirección del proveedor"
-    )
+    nombre: Optional[str] = Field(None, min_length=3, max_length=50)
+    telefono: Optional[str] = Field(None, regex=r'^\+?[0-9]{8,15}$', min_length=8, max_length=15)
+    email: Optional[EmailStr] = None
+    direccion: Optional[str] = Field(None, max_length=250)
+    estado: Optional[bool] = None  # Permite actualizar el estado si es necesario
+

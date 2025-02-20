@@ -7,7 +7,7 @@ class Producto(BaseModel):
     nombre: str
     descripcion: str
     precio: float
-    id_categoria: int
+    id_subcategoria: int
     proveedor_id: int
     unidad_id: int
     ubicacion_id: int
@@ -31,7 +31,7 @@ class ProductoCreate(BaseModel):
         gt=0, 
         description="Precio del producto"
     )
-    id_categoria: int = Field(
+    id_subcategoria: int = Field(
         gt=0, 
         description="ID de la categoría del producto"
     )
@@ -60,7 +60,7 @@ class ProductoUpdate(BaseModel):
         None, gt=0, 
         description="Precio del producto"
     )
-    id_categoria: Optional[int] = Field(
+    id_subcategoria: Optional[int] = Field(
         None, ge=1,
         description="ID de la categoría del producto"
     )

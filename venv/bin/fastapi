@@ -1,4 +1,4 @@
-#!/home/walter-jiron/Escritorio/InventorySystem/venv/bin/python3
+#!/home/mrdog/Desktop/Inventory_System/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

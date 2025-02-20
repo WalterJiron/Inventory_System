@@ -66,8 +66,8 @@ CREATE TABLE Almacenes (
 );
 GO
 
--- Tabla de Ubicaciones dentro de un Almacén
-CREATE TABLE UbicacionesAlmacen(
+-- Tabla de Ubicaciones dentro de un Almacén 
+CREATE TABLE UbicacionesAlmacen( 
     UbicacionID INT PRIMARY KEY IDENTITY(1,1),
     AlmacenID INT FOREIGN KEY REFERENCES Almacenes(AlmacenID) ON DELETE CASCADE,
     CodigoUbicacion NVARCHAR(50) NOT NULL, -- Código único para la ubicación
