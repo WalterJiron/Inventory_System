@@ -169,4 +169,38 @@ class TransferenciasControllers:
         
         except Exception as e:
             raise Exception(f"Error al actualizar transferencia: {str(e)}")
+    @staticmethod
+    async def delete_transferencia(id_trasFe: int)->dict:
+        """ELimina la transferencia dentro de la base de datos """
+        try:
+            conn= await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la Base de datos")
+
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            check_query = """
+                    SELECT EstadoTransferencia 
+                    FROM Transferencias 
+                    WHERE TransferenciaID = ? AND EstadoTransferencia = 1
+            """ 
+            await loop.run_in_executor( None, cursor.execute, check_query, (id_trasFe,))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not result:
+                    raise Exception("Usuario no encontrado")
+            query = """
+                    UPDATE transferencias SET
+                            EstadoTransferencia = 0
+                    WHERE TransferenciaID = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, query, (id_trasFe,))
+            await conn.commit()
+            return{"message" : "Transferencia eliminado exitosamente"}
+        except Exception as e:
+            raise Exception(f"Error al eliminar la transferencia: {str(e)}")
+
+
+
 

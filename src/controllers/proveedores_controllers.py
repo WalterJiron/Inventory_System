@@ -153,4 +153,37 @@ class ProveedoresControllers:
         
         except Exception as e:
             raise Exception(f"Error al actualizar proveedor: {str(e)}")
-
+    
+    @staticmethod
+    async def delete_proveedor(id_prov: int) -> dict:
+        """Elimina (desactiva) un proveedor cambiando su estado a inactivo."""
+        try:
+            conn = await get_connection()
+            if conn is None:
+                raise Exception("No se pudo conectar a la base de datos.")
+            
+            loop = asyncio.get_event_loop()
+            cursor = await loop.run_in_executor(None, conn.cursor)
+            
+            check_query = "SELECT EstadoProv FROM Proveedores WHERE ProveedorID = ?"
+            await loop.run_in_executor(None, cursor.execute, check_query, (id_prov,))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+            
+            if not result:
+                raise Exception("Proveedor no encontrado")
+            
+            if result[0] == 0:
+                raise Exception("El proveedor ya está inactivo")
+            
+            query = """
+                UPDATE Proveedores 
+                SET EstadoProv = 0 
+                WHERE ProveedorID = ?
+            """
+            await loop.run_in_executor(None, cursor.execute, query, (id_prov,))
+            await conn.commit()
+            
+            return {"message": "Proveedor eliminado exitosamente"}
+        
+        except Exception as e:
+            raise Exception(f"Error al eliminar proveedor: {str(e)}")
