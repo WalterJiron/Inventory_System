@@ -16,7 +16,7 @@ class Proveedor(BaseModel):
 
 class ProveedorCreate(BaseModel):
     nombre: str = Field(min_length=3, max_length=50)
-    telefono: str = Field(regex=r'^\+?[0-9]{8,15}$', min_length=8, max_length=15)
+    telefono: str = Field(pattern=r'^\+?[0-9]{8,15}$', min_length=8, max_length=15)
     email: EmailStr
     direccion: Optional[str] = Field(None, max_length=250)
     fecha_creacion: datetime = Field(default_factory=datetime.now)  # Default automático
@@ -24,7 +24,7 @@ class ProveedorCreate(BaseModel):
 
 class ProveedorUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=3, max_length=50)
-    telefono: Optional[str] = Field(None, regex=r'^\+?[0-9]{8,15}$', min_length=8, max_length=15)
+    telefono: Optional[str] = Field(None, pattern=r'^\+?[0-9]{8,15}$', min_length=8, max_length=15)
     email: Optional[EmailStr] = None
     direccion: Optional[str] = Field(None, max_length=250)
     estado: Optional[bool] = None  # Permite actualizar el estado si es necesario

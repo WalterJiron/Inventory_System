@@ -9,7 +9,10 @@ from src.controllers.movimiento_inventario_controllers import MovimientoInventar
 
 inven_mov_router = APIRouter()
 
-@inven_mov_router.get("/inventory_movements", tags=["inventory_movements"], response_model=List[MovimientoInventario])
+@inven_mov_router.get(
+        "/inventory_movements", tags=["Movimientos de Inventario"], 
+        response_model=List[MovimientoInventario]
+)
 async def get_inventory_movements():
     """
     Obtiene todos los movimientos de inventario
@@ -23,7 +26,10 @@ async def get_inventory_movements():
             detail=f"Error al obtener movimientos de inventario: {str(e)}"
         )
     
-@inven_mov_router.get("/inventory_movements/{inventory_movement_id}", tags=["inventory_movements"], response_model=MovimientoInventario)
+@inven_mov_router.get(
+        "/inventory_movements/{inventory_movement_id}", tags=["Movimientos de Inventario"], 
+        response_model=MovimientoInventario
+)
 async def get_inventory_movement(inventory_movement_id: int):
     """
     Obtiene un movimiento de inventario por su ID.
@@ -47,7 +53,10 @@ async def get_inventory_movement(inventory_movement_id: int):
             detail=f"Error al obtener movimiento de inventario: {str(e)}"
         )
 
-@inven_mov_router.post("/inventory_movements", tags=["inventory_movements"], status_code=status.HTTP_201_CREATED)
+@inven_mov_router.post(
+        "/inventory_movements", tags=["Movimientos de Inventario"], 
+        status_code=status.HTTP_201_CREATED
+)
 async def create_new_inventory_movement(inventory_movement: CreateMovimientoInventario):
     """
     Crea un nuevo movimiento de inventario.
@@ -63,7 +72,10 @@ async def create_new_inventory_movement(inventory_movement: CreateMovimientoInve
             detail=f"Error al crear movimiento de inventario: {str(e)}"
         )
 
-@inven_mov_router.put("/inventory_movements/{inventory_movement_id}", tags=["inventory_movements"], response_model= MovimientoInventario)
+@inven_mov_router.put(
+        "/inventory_movements/{inventory_movement_id}", tags=["Movimientos de Inventario"], 
+        response_model= dict
+)
 async def update_inventory_movement(inventory_movement_id: int, inventory_movement: UpdateMovimientoInventario):
     """
     Actualiza un movimiento de inventario.
@@ -85,8 +97,11 @@ async def update_inventory_movement(inventory_movement_id: int, inventory_moveme
             detail=f"Error al actualizar movimiento de inventario: {str(e)}"
         )
 
-@inven_mov_router.delete("/inventory_movements/{inventory_movement_id}", tags=["inventory_movements"], status_code=status.HTTP_204_NO_CONTENT)
-async def delete_inventory_movement(inventory_movement_id: int):
+@inven_mov_router.delete(
+        "/inventory_movements/{inventory_movement_id}", 
+        tags=["Movimientos de Inventario"]
+)
+async def delete_inventory_movement(inventory_movement_id: int) -> dict:
     """
     Elimina un movimiento de inventario por su ID.
     
@@ -94,7 +109,6 @@ async def delete_inventory_movement(inventory_movement_id: int):
     """
     try:
         result = await MovimientoInventarioControllers.delete_movimiento_inventario(inventory_movement_id)
-
         return result
     except Exception as e:
         raise HTTPException(

@@ -15,7 +15,7 @@ class Rol(BaseModel):
 class CreateRol(BaseModel):
     NameRol: str = Field(
         min_length=3, max_length=20,
-        regex=r'^[a-zA-Z]+\.?$',
+        pattern=r'^[a-zA-Z]+\.?$',
         description="Nombre del rol"
     )
     descrip_rol: Optional[str]= Field(
@@ -26,7 +26,7 @@ class CreateRol(BaseModel):
 class UpdateRol(BaseModel):
     NameRol: Optional[str] = Field(
         min_length=3, max_length=20,
-        regex=r'^[a-zA-Z]+\.?$',
+        pattern=r'^[a-zA-Z]+\.?$',
         descripcion= "Nombre del rol"
     )  
     descrip_rol: Optional[str]= Field(

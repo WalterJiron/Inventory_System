@@ -1,4 +1,6 @@
-from src.models.Transferencia_models import Transferencia, TransferenciaCreate, TransferenciaUpdate
+from src.models.Transferencia_models import (
+    Transferencia, TransferenciaCreate, TransferenciaUpdate
+)
 from src.db_config import get_connection
 from typing import List, Optional
 import asyncio
@@ -149,6 +151,17 @@ class TransferenciasControllers:
             
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
+
+            check_query = """
+                SELECT EstadoTransferencia 
+                FROM Transferencias 
+                WHERE TransferenciaID = ? AND EstadoTransferencia = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query, (id_trasFe))
+            result = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not result:
+                raise Exception("Transferencia no encontrada o inactiva")
             
             update_parts, params = TransferenciasControllers.__update_params(transferencia)
             
@@ -169,6 +182,7 @@ class TransferenciasControllers:
         
         except Exception as e:
             raise Exception(f"Error al actualizar transferencia: {str(e)}")
+    
     @staticmethod
     async def delete_transferencia(id_trasFe: int)->dict:
         """ELimina la transferencia dentro de la base de datos """

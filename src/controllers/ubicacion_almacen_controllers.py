@@ -124,6 +124,16 @@ class UbicacionesAlmacenController:
             
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
+
+            check_query ="""
+                SELECT UbicacionID FROM UbicacionesAlmacen 
+                WHERE UbicacionID = ? AND Estado = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query, (ubicacion_id,))
+            ubicacion_exists = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not ubicacion_exists:
+                raise Exception("Ubicación no encontrada o inactiva.")
             
             update_parts, params = UbicacionesAlmacenController.__update_params(ubicacion)
             
@@ -153,6 +163,16 @@ class UbicacionesAlmacenController:
             
             loop = asyncio.get_event_loop()
             cursor = await loop.run_in_executor(None, conn.cursor)
+
+            check_query ="""
+                SELECT UbicacionID FROM UbicacionesAlmacen 
+                WHERE UbicacionID = ? AND Estado = 1
+            """
+            await loop.run_in_executor(None, cursor.execute, check_query, (ubicacion_id,))
+            ubicacion_exists = await loop.run_in_executor(None, cursor.fetchone)
+
+            if not ubicacion_exists:
+                raise Exception("Ubicación no encontrada o ya inactiva.")
             
             query = "UPDATE UbicacionesAlmacen SET Estado = 0 WHERE UbicacionID = ?"
             await loop.run_in_executor(None, cursor.execute, query, (ubicacion_id,))

@@ -4,13 +4,6 @@ from fastapi.requests import Request   # Importacion del tipo Request para manej
 from fastapi.staticfiles import StaticFiles   # Importacion para servir archivos estaticos
 from fastapi.templating import Jinja2Templates   # Importacion del motor de plantillas Jinja2
 
-# Rutas de navegacion
-from src.routers.users_routers import user_router
-from src.routers.almacen_routers import almacen_router
-from src.routers.category_routers import category_router
-from src.routers.inventory_movement_routers import inven_mov_router
-from src.routers.products_routers import products_router
-
 app = FastAPI()
 
 # Configuracion del titulo de la documentacion
@@ -44,17 +37,8 @@ def home(request: Request):
         status_code= status.HTTP_200_OK
         )
     
-#----------------------------------- Ruras de Users ----------------------------------- #
-app.include_router(router= user_router)
+# Rutas de navegacion
+from src.routers.index_routers import routers
 
-#----------------------------------- Ruras de Almacenes ----------------------------------- #
-app.include_router(router= almacen_router)
-
-#----------------------------------- Ruras de Categorias ----------------------------------- #
-app.include_router(router= category_router)
-
-#----------------------------------- Ruras de Movimientos de Inventario ----------------------------------- #
-app.include_router(router= inven_mov_router)
-
-#----------------------------------- Ruras de Productos ----------------------------------- #
-app.include_router(router= products_router)
+#------------------------------ Incluimos las rutas de los routers ------------------------------#
+app.include_router(router= routers)
