@@ -1,0 +1,137 @@
+:root {
+    --background-color: #7209b7;
+    --login-container-bg: #F1FAEE;
+    --inputs-bg: #457B9D;
+    --text-color: #1D3557;
+    --login-button: #A8DADC;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', Courier, monospace;
+    font-style: normal;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: var(--background-color);
+    padding: 20px;
+}
+
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column nowrap;
+    border: 2px solid var(--text-color);
+    background-color: var(--login-container-bg);
+    width: 35%;
+    max-width: 500px;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.login-container h1 {
+    margin-bottom: 25px;
+    cursor: default;
+    font-size: 24px;
+    text-align: center;
+}
+
+.login-inputs {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    gap: 15px;
+    width: 100%;
+}
+
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
+.login-inputs input {
+    width: 100%;
+    background-color: var(--inputs-bg);
+    border: 2px solid var(--text-color);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    outline: none;
+    font-size: 16px;
+}
+
+.login-inputs input::placeholder {
+    color: white;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.login-inputs input:focus {
+    border-color: #8A817C;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: black;
+    font-size: 18px;
+}
+
+.login-inputs button {
+    border: solid black;
+    border-radius: 10px;
+    padding: 10px 15px;
+    background-color: var(--login-button);
+    font-size: 16px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.login-inputs button:hover {
+    background-color: #1D3557;
+    color: white;
+    cursor: pointer;
+}
+
+/* -------- RESPONSIVE DESIGN -------- */
+@media (max-width: 768px) {
+    .login-container {
+        width: 80%;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .login-container h1 {
+        font-size: 20px;
+    }
+
+    .login-inputs input {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .login-inputs button {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+}

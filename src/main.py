@@ -29,11 +29,10 @@ async def  http_error_handle(request: Request, call_nex) -> Response | JSONRespo
     
 @app.get('/', tags=['Home'])
 def home(request: Request):
-    saludo = {'mensaje': 'Que nota!'}
 
     # asi mandamos una respuesta de tipo JSON al HTML
     return templates.TemplateResponse(
-        'index.html', {'request': request, 'saludo': saludo['mensaje']}, 
+        'login.html', 
         status_code= status.HTTP_200_OK
         )
     
