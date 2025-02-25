@@ -27,14 +27,20 @@ async def  http_error_handle(request: Request, call_nex) -> Response | JSONRespo
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return JSONResponse(content= content, status_code= status_code)
     
-@app.get('/', tags=['Home'])
-def home(request: Request):
-
+@app.get('/', tags=['Login'])
+def login(request: Request):
     # asi mandamos una respuesta de tipo JSON al HTML
     return templates.TemplateResponse(
-        'login.html', 
+        'login.html', {'request': request},
         status_code= status.HTTP_200_OK
-        )
+    )
+
+@app.get('/home', tags=['Home'])
+def home(request: Request):
+    return templates.TemplateResponse(
+        'index.html', {'request': request, 'message':"Que nota!"},
+        status_code= status.HTTP_200_OK
+    )
     
 # Rutas de navegacion
 from src.routers.index_routers import routers
