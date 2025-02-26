@@ -14,6 +14,8 @@ from src.routers.subcategorys_routers import subcat_router
 from src.routers.transferencias_routers import transferencia_router
 from src.routers.ubicacionAlm_routers import ubicacion_alm_router
 from src.routers.unidad_medida_routers import unidad_md_router
+from src.routers.login_router import login_router
+from src.routers.home_router import home_router
 
 #----------------------------------- Ruras de Users ----------------------------------- #
 routers.include_router(router= user_router)
@@ -47,3 +49,9 @@ routers.include_router(router= ubicacion_alm_router)
 
 #----------------------------------- Rutas de Unidades de Medida ----------------------------------- #
 routers.include_router(router= unidad_md_router)
+
+#----------------------------------- Rutas de Login ----------------------------------- #
+routers.include_router(router= login_router)
+
+#----------------------------------- Rutas de Home ----------------------------------- #
+routers.include_router(router= home_router)
